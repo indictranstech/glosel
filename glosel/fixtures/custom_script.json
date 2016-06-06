@@ -1,0 +1,20 @@
+[
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Salary Slip", 
+  "modified": "2016-05-31 17:36:28.066686", 
+  "name": "Salary Slip-Client", 
+  "script": "cur_frm.add_fetch(\"employee\", \"epfo_pf_account_number\", \"epfo_pf_account_number\");\n\ncur_frm.add_fetch(\"employee\", \"esi_ip_number\", \"esi_ip_number\");\n\ncur_frm.add_fetch(\"employee\", \"pan\", \"pan\");\n\ncur_frm.add_fetch(\"employee\", \"department\", \"department\");\n\ncur_frm.add_fetch(\"employee\", \"designation\", \"designation\");\n\ncur_frm.add_fetch(\"employee\", \"salary_mode\", \"salary_mode\");", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Item", 
+  "modified": "2016-06-03 13:01:08.370991", 
+  "name": "Item-Client", 
+  "script": " cur_frm.fields_dict['supplier_items'].grid.get_field(\"uom\").get_query = function(doc, cdt, cdn) {\n\treturn {\n\t\tquery: \"glosel.api.get_supplier_uom\"\n\t}\n}", 
+  "script_type": "Client"
+ }
+]
