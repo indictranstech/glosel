@@ -92,16 +92,23 @@ frappe.ui.form.on("Purchase Invoice Item","item_code" ,function(frm,cdt,cdn){
 
 
 
-CustomSalesOrderController = erpnext.selling.SalesOrderController.extend({
-	make_delivery_note:function(){
-		console.log("in chcild")
-	}
-})
+// CustomSalesOrderController = erpnext.selling.SalesOrderController.extend({
+// 	make_delivery_note:function(){
+// 		console.log("in chcild")
+// 	}
+// })
 
-$.extend(cur_frm.cscript, new erpnext.selling.CustomSalesOrderController({frm: cur_frm}));
-
-
+// $.extend(cur_frm.cscript, new erpnext.selling.CustomSalesOrderController({frm: cur_frm}));
 
 
 
 
+// cur_frm.cscript.create_salary_slip  = function(doc, cdt, cdn) {
+// 	cur_frm.cscript.display_activity_log("");
+// 	var callback = function(r, rt){
+// 		if (r.message)
+// 			cur_frm.cscript.display_activity_log(r.message);
+// 	}
+// 	return $c('runserverobj', args={'method':'glosel.custom_py_methods.create_sal_slip','docs':cur_frm.doc},callback);
+	
+// }
