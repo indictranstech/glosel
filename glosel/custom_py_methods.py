@@ -64,3 +64,16 @@ def create_sal_slip(doc):
 	# 		ss_list.append(ss.name)
 
 	# return doc.create_log(ss_list)
+
+def customer_validation(doc,method):
+	print "Inside Validate"
+
+	if doc.customer_group=="Distributer":
+		company_check=frappe.db.get_value("Company",{"company_name":doc.customer_name},"company_name")
+		if not company_check:
+			company=frappe.new_doc("Company")
+			company.company_name=doc.customer_name
+			company.abbr=doc.customer_name[0:5]
+			company.default_currency="INR"
+			company.save()
+
