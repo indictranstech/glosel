@@ -1,5 +1,6 @@
 import frappe
 import json
+import frappe.utils
 # from erpnext.selling.doctype.customer.customer import get_customer_outstanding
 
 @frappe.whitelist(allow_guest=True)
@@ -76,4 +77,33 @@ def customer_validation(doc,method):
 			company.abbr=doc.customer_name[0:5]
 			company.default_currency="INR"
 			company.save()
+
+def delivery_note_submit(doc,method):
+	
+	
+	customer=frappe.get_doc("Customer",doc.customer)
+	if customer.customer_group=="Distributer":
+		se=frappe.new_doc("Stock Entry")
+		se.purpose="Material Receipt"
+		se.posting_date=frappe.utils.nowdate()
+		se.posting_time=frappe.utils.nowtime()
+		se.company=customer.customer_name
+		# se.from_warehouse="Finished Goods"+ " - " + customer.customer_name[5]
+		se.from_warehouse = "Stores - GIPL"
+		print "Warehouse is",se.from_warehouse
+		for raw in doc.get("items"):
+			se_items = se.append('items', {})
+			se_items.item_code=raw.item_code
+			se_items.qty=raw.qty
+			se_items.uom=raw.stock_uom
+			se_items.t_warehouse="Finished Goods" + " " + "-" + " " + doc.customer_name[0:5] 
+		print ("se is",se)
+		se.save()
+		se.submit()
+
+
+
+
+
+
 

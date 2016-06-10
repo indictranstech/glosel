@@ -75,6 +75,11 @@ doc_events = {
 		"validate": "glosel.custom_py_methods.customer_validation",
 		# "on_cancel": "method",
 		# "on_trash": "method"
+	},
+	"Delivery Note": {
+		"on_submit": "glosel.custom_py_methods.delivery_note_submit",
+		# "on_cancel": "method",
+		# "on_trash": "method"
 	}
 }
 
