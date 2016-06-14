@@ -80,7 +80,13 @@ doc_events = {
 		"on_submit": "glosel.custom_py_methods.delivery_note_submit",
 		# "on_cancel": "method",
 		# "on_trash": "method"
-	}
+	},
+	"Leave Application": {
+		"on_submit": "glosel.custom_py_methods.leaveapplication_submit",
+		# "on_cancel": "method",
+		# "on_trash": "method"
+	},
+	
 }
 
 # Scheduled Tasks

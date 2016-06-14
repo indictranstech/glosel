@@ -1,6 +1,7 @@
 import frappe
 import json
 import frappe.utils
+from frappe import _
 # from erpnext.selling.doctype.customer.customer import get_customer_outstanding
 
 @frappe.whitelist(allow_guest=True)
@@ -67,7 +68,11 @@ def create_sal_slip(doc):
 	# return doc.create_log(ss_list)
 
 def customer_validation(doc,method):
-	print "Inside Validate"
+	roles=frappe.get_roles(frappe.session.user)
+	if "Distributer" in roles:
+		if doc.customer_group=="Distributer" or doc.customer_group=="Super Stockist":
+			frappe.throw(_("You can not create a Distributer or Super Stockist"))
+
 
 	if doc.customer_group=="Distributer":
 		company_check=frappe.db.get_value("Company",{"company_name":doc.customer_name},"company_name")
@@ -89,7 +94,7 @@ def delivery_note_submit(doc,method):
 		se.posting_time=frappe.utils.nowtime()
 		se.company=customer.customer_name
 		# se.from_warehouse="Finished Goods"+ " - " + customer.customer_name[5]
-		se.from_warehouse = "Stores - GIPL"
+		# se.from_warehouse = "Stores - GIPL"
 		print "Warehouse is",se.from_warehouse
 		for raw in doc.get("items"):
 			se_items = se.append('items', {})
@@ -97,10 +102,25 @@ def delivery_note_submit(doc,method):
 			se_items.qty=raw.qty
 			se_items.uom=raw.stock_uom
 			se_items.t_warehouse="Finished Goods" + " " + "-" + " " + doc.customer_name[0:5] 
+			se_items.cost_center="Main" + " " + "-" + " " + doc.customer_name[0:5] 
+			
+
 		print ("se is",se)
 		se.save()
 		se.submit()
 
+def leaveapplication_submit(doc,method):
+	
+		roles=frappe.get_roles(frappe.session.user)
+		if "HR Manager" in roles:
+			index=1
+			try:
+				index==1
+			except LeaveApproverIdentityError:
+				pass
+
+	
+			
 
 
 

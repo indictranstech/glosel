@@ -2,6 +2,15 @@
  {
   "docstatus": 0, 
   "doctype": "Custom Script", 
+  "dt": "Salary Structure", 
+  "modified": "2016-06-13 16:48:03.704616", 
+  "name": "Salary Structure-Client", 
+  "script": "cur_frm.add_fetch(\"employee\",\"esi_ip_number\",\"esi_ip_number\")\ncur_frm.add_fetch(\"employee\",\"epfo_pf_account_number\",\"epfo_pf_account_number\")", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
   "dt": "Salary Slip", 
   "modified": "2016-06-07 19:01:08.087305", 
   "name": "Salary Slip-Client", 
@@ -12,18 +21,18 @@
   "docstatus": 0, 
   "doctype": "Custom Script", 
   "dt": "Item", 
-  "modified": "2016-06-03 13:01:08.370991", 
+  "modified": "2016-06-14 16:55:47.413425", 
   "name": "Item-Client", 
-  "script": " cur_frm.fields_dict['supplier_items'].grid.get_field(\"uom\").get_query = function(doc, cdt, cdn) {\n\treturn {\n\t\tquery: \"glosel.api.get_supplier_uom\"\n\t}\n}", 
+  "script": "", 
   "script_type": "Client"
  }, 
  {
   "docstatus": 0, 
   "doctype": "Custom Script", 
   "dt": "Process Payroll", 
-  "modified": "2016-06-08 15:56:06.731400", 
+  "modified": "2016-06-14 16:41:57.754889", 
   "name": "Process Payroll-Client", 
-  "script": "cur_frm.cscript.create_salary_slip  = function(doc, cdt, cdn) {\n\tcur_frm.cscript.display_activity_log(\"\");\nreturn frappe.call({\n\t\t\tmethod: \"glosel.custom_py_methods.create_sal_slip\",\n\t\t\targs:{\n\t\t\t\tdoc:cur_frm.doc\n\t\t\t},\n\t\t\tcallback: function(r) {\n\t\t\t\tif(r.message){\n\t\t\t  cur_frm.cscript.display_activity_log(r.message);\n\t\t\t\t\t\n\t\t\t\t}\n\t\t\t}\n\t\t});\n}", 
+  "script": "", 
   "script_type": "Client"
  }
 ]
