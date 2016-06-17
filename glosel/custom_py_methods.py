@@ -109,15 +109,17 @@ def delivery_note_submit(doc,method):
 		se.save()
 		se.submit()
 
-def leaveapplication_submit(doc,method):
+# def leaveapplication_submit(doc,method):
 	
-		roles=frappe.get_roles(frappe.session.user)
-		if "HR Manager" in roles:
-			index=1
-			try:
-				index==1
-			except LeaveApproverIdentityError:
-				pass
+# 		roles=frappe.get_roles(frappe.session.user)
+# 		if "HR Manager" in roles:
+# 			index=1
+# 			try:
+# 				index==1
+# 			except LeaveApproverIdentityError:
+# 				pass
+
+
 
 	
 			

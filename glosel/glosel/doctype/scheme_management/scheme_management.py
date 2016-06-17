@@ -21,6 +21,7 @@ class SchemeManagement(Document):
 		elif self.apply_on=="Item Group":
 			self.item_code==None
 			self.brand =None
+		
 
 
 

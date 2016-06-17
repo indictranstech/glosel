@@ -86,6 +86,11 @@ doc_events = {
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
+	"Sales Order": {
+		"on_submit": "glosel.scheme_management.so_submit",
+		# "on_cancel": "method",
+		# "on_trash": "method"
+	},
 	
 }
 
