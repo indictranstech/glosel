@@ -27,7 +27,7 @@ def so_submit(doc,method):
 			for i in scheme_title:
 				scheme_name=i.get("title")
 				scheme=frappe.get_doc("Scheme Management",scheme_name)
-				frappe.errprint(scheme)
+				# frappe.errprint(scheme)
 				if int(qty)>=int(scheme.minimum_quantity):
 					for scheme_raw in scheme.get("freebie_items"):
 						free_items = doc.append('items', {})
