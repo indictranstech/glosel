@@ -77,7 +77,7 @@ doc_events = {
 		# "on_trash": "method"
 	},
 	"Delivery Note": {
-		"on_submit": "glosel.custom_py_methods.delivery_note_submit",
+		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit"]
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},

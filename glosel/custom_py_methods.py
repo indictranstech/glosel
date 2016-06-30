@@ -84,7 +84,7 @@ def customer_validation(doc,method):
 			company.save()
 
 def delivery_note_submit(doc,method):
-	
+	print "################################################"
 	
 	customer=frappe.get_doc("Customer",doc.customer)
 	if customer.customer_group=="Distributer":

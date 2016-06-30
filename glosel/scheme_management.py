@@ -58,12 +58,25 @@ def so_submit(doc,method):
 							free_items.save()
 
 def dn_submit(doc,method):
+	print "Inside Scheme Management***************************"
 	for raw in doc.get("items"):
 		if raw.is_free_item==1:
 			sml=frappe.new_doc("Scheme Management Log")
 			sml.date=doc.posting_date
 			sml.distributer=doc.company
 			sml.dn=doc.name
+			item_obj=frappe.get_doc("Item",raw.free_with)
+			sml.item=item_obj.item_code
+			for raw1 in doc.get("items"):
+				if raw1.item_code==sml.item and raw1.is_free_item!=1:
+					sml.item_qty=raw1.qty
+			sml.free_item=raw.item_code
+			sml.free_item_qty=raw.qty
+			sml.scheme=raw.scheme
+			sml.save()
+			sml.submit()
+
+
 			# sml.item=raw.item_code
 
 
