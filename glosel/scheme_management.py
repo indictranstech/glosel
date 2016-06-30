@@ -11,7 +11,7 @@ def so_submit(doc,method):
 	else:
 		company="Glosel India PVT LTD"
 		glosel_object=frappe.get_doc("Company","Glosel India PVT LTD")
-		company_territory="India"
+		company_territory="West"
 
 	
 	for raw in doc.get("items"):
@@ -21,7 +21,7 @@ def so_submit(doc,method):
 			item_group=item.item_group
 			brand=item.brand
 			qty=raw.qty
-			scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  (active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s) and (brand=%s or item_code=%s or item_group=%s and company=%s or territory=%s)  order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,brand,item_code,item_group,company,company_territory),as_dict=True)
+			scheme_title=scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  (active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s) and (brand=%s or item_code=%s or item_group=%s ) and(company=%s or territory=%s) order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,brand,item_code,item_group,company,company_territory),as_dict=True)
 			# frappe.errprint(scheme_title)datta mandir road wakad
 			# scheme_name=scheme_title[0]["title"]
 			for i in scheme_title:
@@ -58,7 +58,6 @@ def so_submit(doc,method):
 							free_items.save()
 
 def dn_submit(doc,method):
-	print "Inside Scheme Management***************************"
 	for raw in doc.get("items"):
 		if raw.is_free_item==1:
 			sml=frappe.new_doc("Scheme Management Log")
@@ -75,9 +74,20 @@ def dn_submit(doc,method):
 			sml.scheme=raw.scheme
 			sml.save()
 			sml.submit()
+# def dn_update(doc,method):
+# 	if is_return==1:
+# 		depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
+# 		for raw in doc.get("items"):
+# 			if 
+
+		
 
 
-			# sml.item=raw.item_code
+
+
+
+
+			
 
 
 
