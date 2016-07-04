@@ -3,19 +3,15 @@ def so_submit(doc,method):
 	# end customer object
 	customer=frappe.get_doc("Customer",doc.customer)
 	# gives distributor name who is actually a company to end customer
-	customer_company=doc.company
+	customer_company=customer.company
 	if customer_company!="Glosel India PVT LTD":
 	# gives distributer object which is actually a company on SO to find the terretory of distributor
 		company=frappe.get_doc("Customer",customer_company)
-		# distributer's terretory as the end customer's terretory and customer's terretory will be same
 		company_territory=company.territory 
-		print("****company territory****",company_territory)
-
 	else:
 		company="Glosel India PVT LTD"
 		glosel_object=frappe.get_doc("Company","Glosel India PVT LTD")
-		# the territory is the end customer's territory
-		company_territory=customer.territory
+		company_territory="West"
 
 	
 	for raw in doc.get("items"):
@@ -25,8 +21,8 @@ def so_submit(doc,method):
 			item_group=item.item_group
 			brand=item.brand
 			qty=raw.qty
-			scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and item_code=%s and company=%s or territory=%s
-			 order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,customer_company,company_territory),as_dict=1,debug=1)
+			 scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and item_code=%s and(company=%s or territory=%s) order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,company,company_territory),as_list=True)
+		           
 			frappe.errprint(scheme_title)
 			# scheme_name=scheme_title[0]["title"]
 			for i in scheme_title:
