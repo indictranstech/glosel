@@ -77,7 +77,7 @@ doc_events = {
 		# "on_trash": "method"
 	},
 	"Delivery Note": {
-		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit"]
+		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add"]
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
@@ -91,6 +91,11 @@ doc_events = {
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
+	# "Item": {
+	# 	"before_insert":
+	# 	# "on_cancel": "method",
+	# 	# "on_trash": "method"
+	# },
 	
 }
 

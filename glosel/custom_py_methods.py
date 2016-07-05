@@ -2,6 +2,7 @@ import frappe
 import json
 import frappe.utils
 from frappe import _
+from frappe.model.naming import make_autoname
 # from erpnext.selling.doctype.customer.customer import get_customer_outstanding
 
 @frappe.whitelist(allow_guest=True)
@@ -108,24 +109,13 @@ def delivery_note_submit(doc,method):
 		print ("se is",se)
 		se.save()
 		se.submit()
-
-# def leaveapplication_submit(doc,method):
-	
-# 		roles=frappe.get_roles(frappe.session.user)
-# 		if "HR Manager" in roles:
-# 			index=1
-# 			try:
-# 				index==1
-# 			except LeaveApproverIdentityError:
-# 				pass
-
-
-
-	
-			
-
-
-
-
-
+@frappe.whitelist()
+def item_autoname(brand):
+	print "******************************",brand
+	# frappe.errprint("Inside naming")
+	# brand=doc.brand
+	brand_code=str(frappe.db.get_value("Brand",{"name":brand},"code"))
+	# doc.item_code = brand_code + '0001'
+	item_code = make_autoname(brand_code + '.####')
+	return item_code
 

@@ -90,6 +90,23 @@ frappe.ui.form.on("Purchase Invoice Item","item_code" ,function(frm,cdt,cdn){
 		});
 })
 
+frappe.ui.form.on("Item","brand" ,function(frm){
+	console.log("ffff",frm.doc.brand)
+	frappe.call({
+		method:"glosel.custom_py_methods.item_autoname",
+		args:{
+			"brand":frm.doc.brand
+		},
+		callback: function(r) {
+				if(r.message){
+					console.log(r.message)
+					frm.doc.item_code=r.message
+					cur_frm.refresh_fields()
+				}
+			}
+		});
+	})
+
 
 
 // CustomSalesOrderController = erpnext.selling.SalesOrderController.extend({

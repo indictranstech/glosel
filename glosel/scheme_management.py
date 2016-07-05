@@ -9,7 +9,7 @@ def so_submit(doc,method):
 		company=frappe.get_doc("Customer",customer_company)
 		# distributer's terretory as the end customer's terretory and customer's terretory will be same
 		company_territory=company.territory 
-		print("****company territory****",company_territory)
+	
 
 	else:
 		company="Glosel India PVT LTD"
@@ -61,6 +61,45 @@ def so_submit(doc,method):
 							free_items.qty=real_quantity-(modulas)
 							free_items.rate=0
 							free_items.save()
+
+def distributer_outstanding_add(doc,method):
+	"""called on dn submit"""
+	if doc.is_return==0:
+		flag=None
+		print "Inside distributer_outstanding"
+		if doc.company !="Glosel India PVT LTD":
+			for raw in doc.get("items"):
+				if raw.is_free_item==1:
+					item_doc=frappe.get_doc("Item",raw.item_code)
+					for raw1 in item_doc.get("distributer_outstanding"):
+						if raw1.company==doc.company:
+							raw1.qty=raw1.qty+raw.qty
+							flag=1
+							
+				 	if not flag :
+				 		print "Inside Not"
+						do = item_doc.append('distributer_outstanding', {})
+						print "Appended"
+						do.company=doc.company
+						do.qty=1
+						# do.save()
+					item_doc.save()
+	else:
+		if doc.company !="Glosel India PVT LTD":
+			for raw in doc.get("items"):
+				if raw.is_free_item==1:
+					item_doc=frappe.get_doc("Item",raw.item_code)
+					for raw1 in item_doc.get("distributer_outstanding"):
+						if raw1.company==doc.company:
+							raw1.qty=raw1.qty+raw.qty
+							item_doc.save()
+
+
+	
+		
+							
+
+
 
 def dn_submit(doc,method):
 	for raw in doc.get("items"):
