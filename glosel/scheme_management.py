@@ -30,6 +30,7 @@ def so_submit(doc,method):
 			frappe.errprint(scheme_title)
 			# scheme_name=scheme_title[0]["title"]
 			for i in scheme_title:
+
 				if i :
 					scheme_name=i.get("title")
 					scheme=frappe.get_doc("Scheme Management",scheme_name)
