@@ -1,0 +1,19 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2016-07-06 11:06:00.052945", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2016-07-07 10:34:51.386097", 
+ "modified_by": "Administrator", 
+ "module": "Glosel", 
+ "name": "Claim Settlement Summary", 
+ "owner": "Administrator", 
+ "query": "select parent as \"Item:Link/Item:200\",company as \"Distributer:Link/Company:200\",qty as \"Quantity::100\" from `tabDistributer Outstanding` order by company;\n", 
+ "ref_doctype": "Distributer Outstanding", 
+ "report_name": "Claim Settlement Summary", 
+ "report_type": "Query Report"
+}

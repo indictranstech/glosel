@@ -32,19 +32,12 @@ def create_sal_slip(doc):
 		Creates salary slip for selected employees if already not created
 	"""
 	doc1=json.loads(doc)
-	print "doc is ",doc
-
-	print "***********************", doc1.get("company")
-	
 	pp=frappe.get_doc("Process Payroll",doc1.get('name'))
-	print "----------------",pp
 	emp_list=pp.get_emp_list()
 	# emp_list = []
-	print "empppppppppppppppppppppppppppp", emp_list
 	ss_list = []
 	for emp in emp_list:
 		employee=frappe.get_doc("Employee",emp[0])
-		print "Emp$$$$$$$$$$$$$$$$$$$$$$$$",emp[0]
 		# if employee.esi_ip_number:
 		# 	print "ESI IP",employee.esi_ip_number
 	# 	if not frappe.db.sql("""select name from `tabSalary Slip`
@@ -85,8 +78,6 @@ def customer_validation(doc,method):
 			company.save()
 
 def delivery_note_submit(doc,method):
-	print "################################################"
-	
 	customer=frappe.get_doc("Customer",doc.customer)
 	if customer.customer_group=="Distributer":
 		se=frappe.new_doc("Stock Entry")
@@ -96,7 +87,6 @@ def delivery_note_submit(doc,method):
 		se.company=customer.customer_name
 		# se.from_warehouse="Finished Goods"+ " - " + customer.customer_name[5]
 		# se.from_warehouse = "Stores - GIPL"
-		print "Warehouse is",se.from_warehouse
 		for raw in doc.get("items"):
 			se_items = se.append('items', {})
 			se_items.item_code=raw.item_code
@@ -106,16 +96,49 @@ def delivery_note_submit(doc,method):
 			se_items.cost_center="Main" + " " + "-" + " " + doc.customer_name[0:5] 
 			
 
-		print ("se is",se)
+		
 		se.save()
 		se.submit()
+
+def employee_autoname(doc,method):
+		# frappe.errprint("Inside autoname emp ")
+		total=0
+		company_code=str(frappe.db.get_value("Company",{"name":doc.company},"code"))
+		employmement_code=doc.code
+		number=make_autoname(company_code+str(employmement_code)+'.####')
+		# temp_code=number.split()
+		for i in number:
+			j=1
+			if j%2==0:
+				total=total+int(i)*1
+				j+=1
+			else:
+				total=total+int(i)*3
+				j+=1
+		sum_last_digit=total%10
+		if sum_last_digit==0:
+			check_digit=0
+		else:
+			check_digit=10-sum_last_digit
+		doc.name=str(number)+str(check_digit)
+
 @frappe.whitelist()
 def item_autoname(brand):
-	print "******************************",brand
-	# frappe.errprint("Inside naming")
-	# brand=doc.brand
+	
 	brand_code=str(frappe.db.get_value("Brand",{"name":brand},"code"))
 	# doc.item_code = brand_code + '0001'
 	item_code = make_autoname(brand_code + '.####')
 	return item_code
+
+	
+
+
+
+
+
+
+
+
+
+	
 

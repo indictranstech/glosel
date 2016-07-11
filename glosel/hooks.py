@@ -77,8 +77,8 @@ doc_events = {
 		# "on_trash": "method"
 	},
 	"Delivery Note": {
-		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add"]
-		# "on_cancel": "method",
+		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add"],
+		"on_update": "glosel.scheme_management.dn_update",
 		# "on_trash": "method"
 	},
 	"Leave Application": {
@@ -88,6 +88,11 @@ doc_events = {
 	},
 	"Sales Order": {
 		"on_submit": "glosel.scheme_management.so_submit",
+		# "on_cancel": "method",
+		# "on_trash": "method"
+	},
+	"Employee": {
+		"autoname": "glosel.custom_py_methods.employee_autoname",
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},

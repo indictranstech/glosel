@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 def so_submit(doc,method):
 	# end customer object
 	customer=frappe.get_doc("Customer",doc.customer)
@@ -27,7 +28,7 @@ def so_submit(doc,method):
 			qty=raw.qty
 			scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and item_code=%s and company=%s or territory=%s
 			 order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,customer_company,company_territory),as_dict=1,debug=1)
-			frappe.errprint(scheme_title)
+			# frappe.errprint(scheme_title)
 			# scheme_name=scheme_title[0]["title"]
 			for i in scheme_title:
 
@@ -96,12 +97,8 @@ def distributer_outstanding_add(doc,method):
 							item_doc.save()
 
 
-	
-		
-							
-
-
-
+			
+						
 def dn_submit(doc,method):
 	for raw in doc.get("items"):
 		if raw.is_free_item==1:
@@ -119,11 +116,82 @@ def dn_submit(doc,method):
 			sml.scheme=raw.scheme
 			sml.save()
 			sml.submit()
-# def dn_update(doc,method):
-# 	if is_return==1:
-# 		depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
-# 		for raw in doc.get("items"):
-# 			if 
+
+def dn_update(doc,method):
+	fflag=0
+	# frappe.errprint("Inside hooks dn update")
+	depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
+	# frappe.errprint (doc.items[0].rate
+
+	for i in range(len(doc.items)):
+		# frappe.errprint (i)
+		if (doc.items[i].item_code==depend_doc.items[i].item_code) and (doc.items[i].rate==depend_doc.items[i].rate):
+			frappe.errprint(depend_doc.items[i].qty)
+			frappe.errprint(doc.items[i].qty)
+			if depend_doc.items[i].is_free_item and depend_doc.items[i].qty>abs(doc.items[i].qty):
+
+				fflag=1
+			# frappe.errprint(fflag)
+			if fflag==1:
+				frappe.throw("You can not return only free Items")
+
+
+
+						
+
+						
+
+
+
+
+
+
+
+		
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		# depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
+		# count=0
+		# count1=0
+
+		# for raw in doc.get("items"):
+		# 	count+=1
+		# for raw1 in depend_doc.get("items"):
+		# 	count1+=1
+		# if count!=count1:
+		# 	frappe.throw(_("The number of items in Delivery Note and Delivery Note Return Must be same"))
+
+			
 
 		
 
