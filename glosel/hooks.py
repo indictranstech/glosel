@@ -78,7 +78,7 @@ doc_events = {
 	},
 	"Delivery Note": {
 		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add"],
-		"on_update": "glosel.scheme_management.dn_update",
+		"on_update": ["glosel.scheme_management.dn_update","glosel.scheme_management.dn_return_update"]
 		# "on_trash": "method"
 	},
 	"Leave Application": {
@@ -87,7 +87,7 @@ doc_events = {
 		# "on_trash": "method"
 	},
 	"Sales Order": {
-		"on_submit": "glosel.scheme_management.so_submit",
+		"before_submit": "glosel.scheme_management.so_submit",
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},

@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 def so_submit(doc,method):
+	
 	# end customer object
 	customer=frappe.get_doc("Customer",doc.customer)
 	# gives distributor name who is actually a company to end customer
@@ -10,15 +11,10 @@ def so_submit(doc,method):
 		company=frappe.get_doc("Customer",customer_company)
 		# distributer's terretory as the end customer's terretory and customer's terretory will be same
 		company_territory=company.territory 
-	
-
 	else:
 		company="Glosel India PVT LTD"
 		glosel_object=frappe.get_doc("Company","Glosel India PVT LTD")
-		# the territory is the end customer's territory
 		company_territory=customer.territory
-
-	
 	for raw in doc.get("items"):
 		if raw.rate!=0 and customer.customer_group!="Distributer":
 			item=frappe.get_doc("Item",raw.item_code)
@@ -28,12 +24,12 @@ def so_submit(doc,method):
 			qty=raw.qty
 			scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and item_code=%s and company=%s or territory=%s
 			 order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,customer_company,company_territory),as_dict=1,debug=1)
-			# frappe.errprint(scheme_title)
-			# scheme_name=scheme_title[0]["title"]
 			for i in scheme_title:
-
 				if i :
 					scheme_name=i.get("title")
+					raw.scheme=scheme_name
+					frappe.errprint("Applied Scheme")
+					frappe.errprint(raw.scheme)
 					scheme=frappe.get_doc("Scheme Management",scheme_name)
 					# frappe.errprint(scheme)
 					if int(qty)>=int(scheme.minimum_quantity):
@@ -62,7 +58,10 @@ def so_submit(doc,method):
 							# print "Modulas is",modulas
 							free_items.qty=real_quantity-(modulas)
 							free_items.rate=0
+
 							free_items.save()
+							# doc.save()
+
 
 def distributer_outstanding_add(doc,method):
 	"""called on dn submit"""
@@ -79,9 +78,8 @@ def distributer_outstanding_add(doc,method):
 							flag=1
 							
 				 	if not flag :
-				 		print "Inside Not"
+				 		
 						do = item_doc.append('distributer_outstanding', {})
-						print "Appended"
 						do.company=doc.company
 						do.qty=1
 						# do.save()
@@ -97,8 +95,7 @@ def distributer_outstanding_add(doc,method):
 							item_doc.save()
 
 
-			
-						
+									
 def dn_submit(doc,method):
 	for raw in doc.get("items"):
 		if raw.is_free_item==1:
@@ -118,22 +115,98 @@ def dn_submit(doc,method):
 			sml.submit()
 
 def dn_update(doc,method):
-	fflag=0
-	# frappe.errprint("Inside hooks dn update")
-	depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
-	# frappe.errprint (doc.items[0].rate
+	if doc.is_return==1:
+		fflag=0
+		depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
+		for i in range(len(doc.items)):
+			# frappe.errprint (i)
+			if (doc.items[i].item_code==depend_doc.items[i].item_code) and (doc.items[i].rate==depend_doc.items[i].rate):
+				frappe.errprint(depend_doc.items[i].qty)
+				frappe.errprint(doc.items[i].qty)
+				if depend_doc.items[i].is_free_item and depend_doc.items[i].qty>abs(doc.items[i].qty):
+					fflag=1
+				# frappe.errprint(fflag)
+				if fflag==1:
+					frappe.throw("You can not return only free Items")
 
-	for i in range(len(doc.items)):
-		# frappe.errprint (i)
-		if (doc.items[i].item_code==depend_doc.items[i].item_code) and (doc.items[i].rate==depend_doc.items[i].rate):
-			frappe.errprint(depend_doc.items[i].qty)
-			frappe.errprint(doc.items[i].qty)
-			if depend_doc.items[i].is_free_item and depend_doc.items[i].qty>abs(doc.items[i].qty):
+def dn_return_update(doc,method):
+	frappe.errprint("Inside DN return uodate")
+	if doc.is_return==1:
+		depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
+		for i in range(len(doc.items)):
+			if (doc.items[i].item_code==depend_doc.items[i].item_code) and (doc.items[i].rate==depend_doc.items[i].rate) and (not doc.items[i].is_free_item) and (depend_doc.items[i].qty>abs(doc.items[i].qty)):
+				scheme_name=doc.items[i].scheme
+				scheme=frappe.get_doc("Scheme Management",scheme_name)
+				# actual quantity of original item
+				actual_item_qty=doc.items[i].qty+depend_doc.items[i].qty
+				# scheme_item_list=[]
+				# for freebie in scheme.get("freebie_items"):
+				# 	item_code=freebie.item_code
+				# 	qty=freebie.quantity
+					# scheme_item_dict={"item_code":item_code,"qty":qty}
+					# scheme_item_list.append(scheme_item_dict)
+					# total remaining actual items after return. Now can calculate no.of free items on this qty and compare with remaining qty
+					
+					# real_quantity=int((qty*scheme_raw.quantity)/scheme.minimum_quantity)
+					# modulas=real_quantity%scheme.minimum_quantity
+					# if real_quantity<scheme.minimum_quantity:
+					# 	modulas=0
+				# finding free items with current items
+				for raw1 in doc.get("items"):
+					if raw1.scheme==scheme_name and raw1.free_with==doc.items[i].item_code:
+						# free item qty in dn return
+						this_item_qty=raw1.qty
+						for freebie in scheme.get("freebie_items"):
+							item_code=freebie.item_code
+							# qty=freebie.quantity
+							# scheme_item_dict={"item_code":item_code,"qty":qty}
+							if item_code==raw1.item_code:
+								# free item quantity specified in scheme master
+								free_item_qty=freebie.quantity
+								min_qty_actual_item=scheme.minimum_quantity
+								# modified  quantity of free itemafter calculations
+								new_qty_free_item=(actual_item_qty*free_item_qty)/min_qty_actual_item
+								# modulas=new_qty_free_item%`
+								final_new_qty_free_item
+								# actual quntity to be displayed
+								raw1.qty = int(this_item_qty+new_qty_free_item)
+								frappe.errprint(raw1.qty)
 
-				fflag=1
-			# frappe.errprint(fflag)
-			if fflag==1:
-				frappe.throw("You can not return only free Items")
+								
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+					
+
+
+
+
+
+
+
 
 
 
@@ -144,52 +217,6 @@ def dn_update(doc,method):
 
 
 
-
-
-
-		
-		
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		# depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
-		# count=0
-		# count1=0
-
-		# for raw in doc.get("items"):
-		# 	count+=1
-		# for raw1 in depend_doc.get("items"):
-		# 	count1+=1
-		# if count!=count1:
-		# 	frappe.throw(_("The number of items in Delivery Note and Delivery Note Return Must be same"))
 
 			
 
