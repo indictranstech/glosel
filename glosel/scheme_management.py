@@ -16,13 +16,15 @@ def so_submit(doc,method):
 		glosel_object=frappe.get_doc("Company","Glosel India PVT LTD")
 		company_territory=customer.territory
 	for raw in doc.get("items"):
-		if raw.rate!=0 and customer.customer_group!="Distributer":
+		
+		if raw.is_free_item==0 and customer.customer_group!="Distributer":
+			raw.description=None
 			item=frappe.get_doc("Item",raw.item_code)
 			item_code=raw.item_code
 			item_group=item.item_group
 			brand=item.brand
 			qty=raw.qty
-			scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and item_code=%s and company=%s or territory=%s
+			scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and item_code=%s and (company=%s or territory=%s)
 			 order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,customer_company,company_territory),as_dict=1,debug=1)
 			for i in scheme_title:
 				if i :
@@ -31,13 +33,13 @@ def so_submit(doc,method):
 					frappe.errprint("Applied Scheme")
 					frappe.errprint(raw.scheme)
 					scheme=frappe.get_doc("Scheme Management",scheme_name)
-					# frappe.errprint(scheme)
+					frappe.errprint(scheme)
 					if int(qty)>=int(scheme.minimum_quantity):
 						for scheme_raw in scheme.get("freebie_items"):
 							free_items = doc.append('items', {})
 							free_items.is_free_item=1
 							free_items.item_code=scheme_raw.item_code
-							free_items.item_name=scheme_raw.item_code
+							free_items.item_name=scheme_raw.item_name
 							# Source item name
 							free_items.free_with=raw.item_code
 							free_items.scheme=scheme_name
@@ -57,6 +59,11 @@ def so_submit(doc,method):
 								modulas=0
 							# print "Modulas is",modulas
 							free_items.qty=real_quantity-(modulas)
+							if raw.description==None:
+								raw.description="Free {0} {1} \n ".format(free_items.qty,free_items.item_name)
+							else:
+								raw.description=raw.description +"\n Free {0} {1}  ".format(free_items.qty,free_items.item_name)
+
 							free_items.rate=0
 
 							free_items.save()
@@ -130,7 +137,7 @@ def dn_update(doc,method):
 					frappe.throw("You can not return only free Items")
 
 def dn_return_update(doc,method):
-	frappe.errprint("Inside DN return uodate")
+	# frappe.errprint("Inside DN return uodate")
 	if doc.is_return==1:
 		depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
 		for i in range(len(doc.items)):
@@ -156,6 +163,7 @@ def dn_return_update(doc,method):
 					if raw1.scheme==scheme_name and raw1.free_with==doc.items[i].item_code:
 						# free item qty in dn return
 						this_item_qty=raw1.qty
+						# populating free items in the scheme 
 						for freebie in scheme.get("freebie_items"):
 							item_code=freebie.item_code
 							# qty=freebie.quantity
@@ -166,8 +174,8 @@ def dn_return_update(doc,method):
 								min_qty_actual_item=scheme.minimum_quantity
 								# modified  quantity of free itemafter calculations
 								new_qty_free_item=(actual_item_qty*free_item_qty)/min_qty_actual_item
-								# modulas=new_qty_free_item%`
-								final_new_qty_free_item
+								modulas=new_qty_free_item%min_qty_actual_item
+								# final_new_qty_free_item=
 								# actual quntity to be displayed
 								raw1.qty = int(this_item_qty+new_qty_free_item)
 								frappe.errprint(raw1.qty)
