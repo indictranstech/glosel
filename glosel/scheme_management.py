@@ -174,11 +174,14 @@ def dn_return_update(doc,method):
 								min_qty_actual_item=scheme.minimum_quantity
 								# modified  quantity of free itemafter calculations
 								new_qty_free_item=(actual_item_qty*free_item_qty)/min_qty_actual_item
-								modulas=new_qty_free_item%min_qty_actual_item
-								# final_new_qty_free_item=
+								modulas=new_qty_free_item%free_item_qty
+								final_new_qty_free_item=new_qty_free_item-modulas
+
 								# actual quntity to be displayed
-								raw1.qty = int(this_item_qty+new_qty_free_item)
-								frappe.errprint(raw1.qty)
+								raw1.qty = int(this_item_qty+final_new_qty_free_item)
+
+								# frappe.errprint(raw1.qty)
+
 
 								
 
