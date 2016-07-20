@@ -18,7 +18,7 @@ def so_submit(doc,method):
 	for raw in doc.get("items"):
 		
 		if raw.is_free_item==0 and customer.customer_group!="Distributer":
-			raw.description=None
+			# raw.description=None
 			item=frappe.get_doc("Item",raw.item_code)
 			item_code=raw.item_code
 			item_group=item.item_group
@@ -125,16 +125,16 @@ def dn_update(doc,method):
 	if doc.is_return==1:
 		fflag=0
 		depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
-		for i in range(len(doc.items)):
-			# frappe.errprint (i)
-			if (doc.items[i].item_code==depend_doc.items[i].item_code) and (doc.items[i].rate==depend_doc.items[i].rate):
-				frappe.errprint(depend_doc.items[i].qty)
-				frappe.errprint(doc.items[i].qty)
-				if depend_doc.items[i].is_free_item and depend_doc.items[i].qty>abs(doc.items[i].qty):
-					fflag=1
-				# frappe.errprint(fflag)
-				if fflag==1:
-					frappe.throw("You can not return only free Items")
+		# for i in range(len(doc.items)):
+		# 	# frappe.errprint (i)
+		# 	if (doc.items[i].item_code==depend_doc.items[i].item_code) and (doc.items[i].rate==depend_doc.items[i].rate):
+		# 		frappe.errprint(depend_doc.items[i].qty)
+		# 		frappe.errprint(doc.items[i].qty)
+		# 		if depend_doc.items[i].is_free_item and depend_doc.items[i].qty>abs(doc.items[i].qty):
+		# 			fflag=1
+		# 		# frappe.errprint(fflag)
+		# 		if fflag==1:
+		# 			frappe.throw("You can not return only free Items")
 
 def dn_return_update(doc,method):
 	# frappe.errprint("Inside DN return uodate")
