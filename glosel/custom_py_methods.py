@@ -3,6 +3,7 @@ import json
 import frappe.utils
 from frappe import _
 from frappe.model.naming import make_autoname
+import frappe.defaults
 # from erpnext.selling.doctype.customer.customer import get_customer_outstanding
 
 @frappe.whitelist(allow_guest=True)
@@ -129,6 +130,17 @@ def item_autoname(brand):
 	# doc.item_code = brand_code + '0001'
 	item_code = make_autoname(brand_code + '.####')
 	return item_code
+
+def so_validate(doc,method):
+	print "Inside ------------------------"
+	if doc.company!=frappe.defaults.get_defaults().get("company"):
+		print "Inside if "
+		for raw in doc.get("items"):
+			raw.warehouse="Finished Goods" + " " + "-" + " " + doc.company[0:5]
+			print raw.warehouse,"Arpit_____________________"
+
+
+
 
 	
 

@@ -1,19 +1,24 @@
 import frappe
+import frappe.defaults
 from frappe import _
+
 def so_submit(doc,method):
-	
+	print " default company is " ,frappe.defaults.get_defaults().get("company")
 	# end customer object
 	customer=frappe.get_doc("Customer",doc.customer)
 	# gives distributor name who is actually a company to end customer
 	customer_company=doc.company
-	if customer_company!="Glosel India PVT LTD":
+	if customer_company!=frappe.defaults.get_defaults().get("company"):
+	# if customer_company!="Glosel India PVT LTD":
 	# gives distributer object which is actually a company on SO to find the terretory of distributor
 		company=frappe.get_doc("Customer",customer_company)
 		# distributer's terretory as the end customer's terretory and customer's terretory will be same
 		company_territory=company.territory 
 	else:
-		company="Glosel India PVT LTD"
-		glosel_object=frappe.get_doc("Company","Glosel India PVT LTD")
+		company= frappe.defaults.get_defaults().get("company")
+		# company="Glosel India PVT LTD"
+		glosel_object=frappe.get_doc("Company",frappe.defaults.get_defaults().get("company"))
+		# glosel_object=frappe.get_doc("Company","Glosel India PVT LTD")
 		company_territory=customer.territory
 	for raw in doc.get("items"):
 		
@@ -30,8 +35,8 @@ def so_submit(doc,method):
 				if i :
 					scheme_name=i.get("title")
 					raw.scheme=scheme_name
-					frappe.errprint("Applied Scheme")
-					frappe.errprint(raw.scheme)
+					# frappe.errprint("Applied Scheme")
+					# frappe.errprint(raw.scheme)
 					scheme=frappe.get_doc("Scheme Management",scheme_name)
 					frappe.errprint(scheme)
 					if int(qty)>=int(scheme.minimum_quantity):
@@ -40,6 +45,10 @@ def so_submit(doc,method):
 							free_items.is_free_item=1
 							free_items.item_code=scheme_raw.item_code
 							free_items.item_name=scheme_raw.item_name
+							if doc.company==frappe.defaults.get_defaults().get("company"):
+								free_items.warehouse=frappe.db.get_value("Item",{"item_code":raw.item_code},"default_warehouse")
+							else:
+								free_items.warehouse="Finished Goods" + " " + "-" + " " + doc.company[0:5]
 							# Source item name
 							free_items.free_with=raw.item_code
 							free_items.scheme=scheme_name
@@ -75,7 +84,8 @@ def distributer_outstanding_add(doc,method):
 	if doc.is_return==0:
 		flag=None
 		print "Inside distributer_outstanding"
-		if doc.company !="Glosel India PVT LTD":
+		if doc.company !=frappe.defaults.get_defaults().get("company"):
+		# if doc.company !="Glosel India PVT LTD":
 			for raw in doc.get("items"):
 				if raw.is_free_item==1:
 					item_doc=frappe.get_doc("Item",raw.item_code)
@@ -92,7 +102,8 @@ def distributer_outstanding_add(doc,method):
 						# do.save()
 					item_doc.save()
 	else:
-		if doc.company !="Glosel India PVT LTD":
+		if doc.company!=frappe.defaults.get_defaults().get("company"):
+		# if doc.company !="Glosel India PVT LTD":
 			for raw in doc.get("items"):
 				if raw.is_free_item==1:
 					item_doc=frappe.get_doc("Item",raw.item_code)

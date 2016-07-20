@@ -87,7 +87,9 @@ doc_events = {
 		# "on_trash": "method"
 	},
 	"Sales Order": {
-		"before_submit": "glosel.scheme_management.so_submit",
+	    "validate":"glosel.custom_py_methods.so_validate",
+		"before_submit":"glosel.scheme_management.so_submit",
+		# "on_submit":"glosel.custom_py_methods.so_submit"
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
@@ -137,4 +139,4 @@ doc_events = {
 # 	"frappe.desk.doctype.event.event.get_events": "glosel.event.get_events"
 # }
 
-fixtures=['Custom Script','Property Setter','Custom Field','Print Format','Role']
+fixtures=['Custom Script','Property Setter','Custom Field','Print Format','Role','Customer Group']
