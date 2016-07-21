@@ -2,6 +2,33 @@
  {
   "docstatus": 0, 
   "doctype": "Custom Script", 
+  "dt": "Employee", 
+  "modified": "2016-07-06 11:59:49.690055", 
+  "name": "Employee-Client", 
+  "script": "cur_frm.add_fetch('employment_type','code','code')", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Delivery Note", 
+  "modified": "2016-07-14 17:51:12.458161", 
+  "name": "Delivery Note-Client", 
+  "script": "frappe.ui.form.on('Delivery Note', {\n\trefresh: function(frm) {\n\n\n\n\t}\n});\n\n\n", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Purchase Order", 
+  "modified": "2016-07-14 19:34:03.451968", 
+  "name": "Purchase Order-Client", 
+  "script": "frappe.ui.form.on(\"Purchase Order Item\",\"item_code\" ,function(frm,cdt,cdn){\n\tif (cur_frm.doc.supplier==\"\")\n\t{\n\tfrappe.throw(__(\"Please Enter Supplier Name\"))\t\n\t}\n\titems=locals[cdt][cdn]\n\treturn frappe.call({\n\t\t\tmethod: \"glosel.api.fetch_supplier_uom\",\n\t\t\targs: {\n\t\t\t\tsupplier: frm.doc.supplier,\n\t\t\t\titem:items.item_code\n\t\t\t},\n\t\t\tcallback: function(r) {\n\t\t\t\tif(r.message){\n\t\t\t\t\t// console.log(r.message)\n\t\t\t\t\t// console.log(items.unit_of_measure)\n\t\t\t\t\t// items.unit_of_measure=r.message\n\t\t\t\t\t items.uom=r.message\n\t\t\t\t\t// console.log(items.uom)\n\t\t\t\t\t// cur_frm.refresh_fields()\n\t\t\t\t\t//frappe.model.set_value(cdt, cdn, \"uom\", r.message);\n\t\t\t\t\tconsole.log(\"before refresh\",items.uom)\n\t\t\t\t\tcur_frm.refresh_field(\"items\")\n\t\t\t\t\tconsole.log(\"after Refresh\",items.uom)\n\n\t\t\t\t}\n\t\t\t}\n\t\t});\n})", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
   "dt": "Salary Structure", 
   "modified": "2016-06-13 16:48:03.704616", 
   "name": "Salary Structure-Client", 
