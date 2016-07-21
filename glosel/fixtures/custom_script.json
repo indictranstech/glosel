@@ -48,9 +48,9 @@
   "docstatus": 0, 
   "doctype": "Custom Script", 
   "dt": "Item", 
-  "modified": "2016-06-14 16:55:47.413425", 
+  "modified": "2016-07-21 15:48:20.041900", 
   "name": "Item-Client", 
-  "script": "", 
+  "script": "frappe.ui.form.on(\"Item\",\"brand\" ,function(frm){\n\tconsole.log(\"ffff\",frm.doc.brand)\n \tfrappe.call({\n \t\tmethod:\"glosel.custom_py_methods.item_autoname\",\n \t\targs:{\n \t\t\t\"brand\":frm.doc.brand\n \t\t},\n \t\tcallback: function(r) {\n \t\t\t\tif(r.message){\n \t\t\t\t\t console.log(r.message)\n \t\t\t\t\t//cur_frm.doc.item_code=r.message\n                                          cur_frm.set_value(\"item_code\",r.message)\n \t\t\t\t\t//console.log(items.uom)\n \t\t\t\t\t// cur_frm.refresh_fields()\n \t\t\t\t}\n \t\t\t}\n \t\t});\n \t})", 
   "script_type": "Client"
  }, 
  {

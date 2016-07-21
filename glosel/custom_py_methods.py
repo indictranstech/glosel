@@ -14,16 +14,16 @@ def get_customer_credit_limit_with_oustanding(so):
 	name=cust.name
 	company=sales_order.company
 	outstanding_amount = get_customer_outstanding(name, company)
-	print "Outstangiing Amount",outstanding_amount
-	print"outstanding is", get_customer_outstanding(name, company)
-	print "Credit Limit is",credit_limit
+	# print "Outstangiing Amount",outstanding_amount
+	# print"outstanding is", get_customer_outstanding(name, company)
+	# print "Credit Limit is",credit_limit
 	available_amount=credit_limit-outstanding_amount
-	print "available_amount",available_amount
+	# print "available_amount",available_amount
 	if sales_order.grand_total>available_amount:
-		print "Outstanding"
+		# print "Outstanding"
 		return 0
 	else: 
-		print "No Outstanding"
+		# print "No Outstanding"
 		return 1 
 
 @frappe.whitelist()
@@ -132,12 +132,12 @@ def item_autoname(brand):
 	return item_code
 
 def so_validate(doc,method):
-	print "Inside ------------------------"
+	# print "Inside ------------------------"
 	if doc.company!=frappe.defaults.get_defaults().get("company"):
-		print "Inside if "
+		# print "Inside if "
 		for raw in doc.get("items"):
 			raw.warehouse="Finished Goods" + " " + "-" + " " + doc.company[0:5]
-			print raw.warehouse,"Arpit_____________________"
+			# print raw.warehouse,"Arpit_____________________"
 
 
 

@@ -3,7 +3,7 @@ import frappe.defaults
 from frappe import _
 
 def so_submit(doc,method):
-	print " default company is " ,frappe.defaults.get_defaults().get("company")
+	# print " default company is " ,frappe.defaults.get_defaults().get("company")
 	# end customer object
 	customer=frappe.get_doc("Customer",doc.customer)
 	# gives distributor name who is actually a company to end customer
@@ -38,7 +38,7 @@ def so_submit(doc,method):
 					# frappe.errprint("Applied Scheme")
 					# frappe.errprint(raw.scheme)
 					scheme=frappe.get_doc("Scheme Management",scheme_name)
-					frappe.errprint(scheme)
+					# frappe.errprint(scheme)
 					if int(qty)>=int(scheme.minimum_quantity):
 						for scheme_raw in scheme.get("freebie_items"):
 							free_items = doc.append('items', {})
@@ -52,21 +52,23 @@ def so_submit(doc,method):
 							# Source item name
 							free_items.free_with=raw.item_code
 							free_items.scheme=scheme_name
-							if scheme.brand:
-								name=scheme.brand
-							elif scheme.item_code:
-								name=scheme.item_code
-							elif scheme.item_group:
-								name=scheme.item_group
-							free_items.description="Free with {0} {1}".format(scheme.minimum_quantity,name)
+							# if scheme.brand:
+							# 	name=scheme.brand
+							# elif scheme.item_code:
+							# 	name=scheme.item_code
+							# elif scheme.item_group:
+							# 	name=scheme.item_group
+							free_items.description="Free with {0} {1}".format(scheme.minimum_quantity,scheme.item_code)
 							# free_items.qty=scheme_raw.quantity
 							real_quantity=int((qty*scheme_raw.quantity)/scheme.minimum_quantity)
 							# print "Real Quantity is",real_quantity
+							modulas=0
+							if qty > scheme.minimum_quantity:
 
-							modulas=real_quantity%scheme.minimum_quantity
-							if real_quantity<scheme.minimum_quantity:
-								modulas=0
-							# print "Modulas is",modulas
+								modulas=real_quantity%scheme.minimum_quantity
+								if real_quantity<scheme.minimum_quantity:
+									modulas=0
+								# print "Modulas is",modulas
 							free_items.qty=real_quantity-(modulas)
 							if raw.description==None:
 								raw.description="Free {0} {1} \n ".format(free_items.qty,free_items.item_name)
@@ -83,7 +85,7 @@ def distributer_outstanding_add(doc,method):
 	"""called on dn submit"""
 	if doc.is_return==0:
 		flag=None
-		print "Inside distributer_outstanding"
+		# print "Inside distributer_outstanding"
 		if doc.company !=frappe.defaults.get_defaults().get("company"):
 		# if doc.company !="Glosel India PVT LTD":
 			for raw in doc.get("items"):
