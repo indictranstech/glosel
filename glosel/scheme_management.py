@@ -1,3 +1,4 @@
+
 import frappe
 import frappe.defaults
 from frappe import _
@@ -30,16 +31,18 @@ def so_submit(doc,method):
 			brand=item.brand
 			qty=raw.qty
 			scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and item_code=%s and (company=%s or territory=%s)
-			 order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,customer_company,company_territory),as_dict=1,debug=1)
+			 order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,customer_company,company_territory),as_dict=1)
 			for i in scheme_title:
 				if i :
 					scheme_name=i.get("title")
+					frappe.errprint(scheme_name)
 					raw.scheme=scheme_name
 					# frappe.errprint("Applied Scheme")
 					# frappe.errprint(raw.scheme)
 					scheme=frappe.get_doc("Scheme Management",scheme_name)
-					# frappe.errprint(scheme)
+					# frappe.errprint(scheme_name)
 					if int(qty)>=int(scheme.minimum_quantity):
+						raw.description=None
 						for scheme_raw in scheme.get("freebie_items"):
 							free_items = doc.append('items', {})
 							free_items.is_free_item=1
@@ -52,26 +55,21 @@ def so_submit(doc,method):
 							# Source item name
 							free_items.free_with=raw.item_code
 							free_items.scheme=scheme_name
-							# if scheme.brand:
-							# 	name=scheme.brand
-							# elif scheme.item_code:
-							# 	name=scheme.item_code
-							# elif scheme.item_group:
-							# 	name=scheme.item_group
-							free_items.description="Free with {0} {1}".format(scheme.minimum_quantity,scheme.item_code)
-							# free_items.qty=scheme_raw.quantity
-							real_quantity=int((qty*scheme_raw.quantity)/scheme.minimum_quantity)
-							# print "Real Quantity is",real_quantity
-							modulas=0
-							if qty > scheme.minimum_quantity:
+							free_items.description="Free with Minimum {0} {1}".format(scheme.minimum_quantity,scheme.item_name)
+							new_qty=find_divisible_number(int(qty),int(scheme.minimum_quantity))
+							real_quantity=int((new_qty*scheme_raw.quantity)/scheme.minimum_quantity)
+							# real_quantity=int((qty*scheme_raw.quantity)/scheme.minimum_quantity)
+							# modulas=0
+							# if qty > scheme.minimum_quantity:
 
-								modulas=real_quantity%scheme.minimum_quantity
-								if real_quantity<scheme.minimum_quantity:
-									modulas=0
-								# print "Modulas is",modulas
-							free_items.qty=real_quantity-(modulas)
+							# 	modulas=real_quantity%scheme.minimum_quantity
+							# 	if real_quantity<scheme.minimum_quantity:
+							# 		modulas=0
+					
+							# free_items.qty=real_quantity-(modulas)
+							free_items.qty=real_quantity
 							if raw.description==None:
-								raw.description="Free {0} {1} \n ".format(free_items.qty,free_items.item_name)
+								raw.description="Free {0} {1}  ".format(free_items.qty,free_items.item_name)
 							else:
 								raw.description=raw.description +"\n Free {0} {1}  ".format(free_items.qty,free_items.item_name)
 
@@ -100,7 +98,7 @@ def distributer_outstanding_add(doc,method):
 				 		
 						do = item_doc.append('distributer_outstanding', {})
 						do.company=doc.company
-						do.qty=1
+						do.qty=raw.qty
 						# do.save()
 					item_doc.save()
 	else:
@@ -149,7 +147,7 @@ def dn_update(doc,method):
 		# 		if fflag==1:
 		# 			frappe.throw("You can not return only free Items")
 
-def dn_return_update(doc,method):
+def dn_return_submit(doc,method):
 	# frappe.errprint("Inside DN return uodate")
 	if doc.is_return==1:
 		depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
@@ -194,9 +192,27 @@ def dn_return_update(doc,method):
 								raw1.qty = int(this_item_qty+final_new_qty_free_item)
 
 								# frappe.errprint(raw1.qty)
+def find_divisible_number(qty,sc_min_qty):
+	for i in range(qty,sc_min_qty-1,-1):
+		if i%sc_min_qty==0:
+			return i
+
+def dn_on_cancel(doc,method):
+	if doc.company!=frappe.defaults.get_defaults().get("company") and doc.is_return==0:
+		# if doc.company !="Glosel India PVT LTD":
+		for raw in doc.get("items"):
+			if raw.is_free_item==1:
+				item_doc=frappe.get_doc("Item",raw.item_code)
+				for raw1 in item_doc.get("distributer_outstanding"):
+					if raw1.company==doc.company:
+						raw1.qty=raw1.qty-raw.qty
+						item_doc.save()
 
 
-								
+@frappe.whitelist()
+def onload_dn_return():
+	pass
+
 
 
 

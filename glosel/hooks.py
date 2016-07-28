@@ -77,8 +77,9 @@ doc_events = {
 		# "on_trash": "method"
 	},
 	"Delivery Note": {
-		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add"],
-		"on_update": ["glosel.scheme_management.dn_update","glosel.scheme_management.dn_return_update"]
+		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add","glosel.scheme_management.dn_return_submit"],
+		"on_cancel":"glosel.scheme_management.dn_on_cancel"
+		# "on_update": ["glosel.scheme_management.dn_update"]
 		# "on_trash": "method"
 	},
 	"Leave Application": {
@@ -95,6 +96,11 @@ doc_events = {
 	},
 	"Employee": {
 		"autoname": "glosel.custom_py_methods.employee_autoname",
+		# "on_cancel": "method",
+		# "on_trash": "method"
+	},
+	"Employment Type": {
+		"validate": "glosel.custom_py_methods.employement_type_code_check",
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},

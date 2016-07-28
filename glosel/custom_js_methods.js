@@ -146,3 +146,32 @@
 // 	return $c('runserverobj', args={'method':'glosel.custom_py_methods.create_sal_slip','docs':cur_frm.doc},callback);
 	
 // }
+frappe.ui.form.on("Delivery Note","onload" ,function(frm){
+	items=cur_frm.doc.items
+	if (cur_frm.doc.is_return==1)
+	{
+	return frappe.call({
+			method: "glosel.api.fetch_supplier_uom",
+			args: {
+				return_against: frm.doc.return_against,
+				
+			},
+			callback: function(r) {
+				if(r.message){
+					// console.log(r.message)
+					// console.log(items.unit_of_measure)
+					// items.unit_of_measure=r.message
+					// items.uom=r.message
+					console.log(items.uom)
+					// cur_frm.refresh_fields()
+					frappe.model.set_value(cdt, cdn, "uom", r.message);
+					console.log("before refresh",items.uom)
+					cur_frm.refresh_field("items")
+					console.log("after Refresh",items.uom)
+				}
+			}
+		});
+	}
+	
+	
+})

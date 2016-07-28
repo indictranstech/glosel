@@ -138,7 +138,10 @@ def so_validate(doc,method):
 		for raw in doc.get("items"):
 			raw.warehouse="Finished Goods" + " " + "-" + " " + doc.company[0:5]
 			# print raw.warehouse,"Arpit_____________________"
-
+def employement_type_code_check(doc,method):
+	code=frappe.db.get_value("Employment Type",{"code":doc.code},"code")
+	if code==doc.code:
+		frappe.throw(_("Employment Code already present ,please choose diffrent code"))
 
 
 
