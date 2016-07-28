@@ -35,7 +35,7 @@ def so_submit(doc,method):
 			for i in scheme_title:
 				if i :
 					scheme_name=i.get("title")
-					frappe.errprint(scheme_name)
+					# frappe.errprint(scheme_name)
 					raw.scheme=scheme_name
 					# frappe.errprint("Applied Scheme")
 					# frappe.errprint(raw.scheme)
