@@ -12,7 +12,8 @@ def so_submit(doc,method):
 	if customer_company!=frappe.defaults.get_defaults().get("company"):
 	# if customer_company!="Glosel India PVT LTD":
 	# gives distributer object which is actually a company on SO to find the terretory of distributor
-		company=frappe.get_doc("Customer",customer_company)
+		customer_company_name=frappe.db.get_value("Customer",{"customer_name":customer_company},"name")
+		company=frappe.get_doc("Customer",customer_company_name)
 		# distributer's terretory as the end customer's terretory and customer's terretory will be same
 		company_territory=company.territory 
 	else:
@@ -209,9 +210,7 @@ def dn_on_cancel(doc,method):
 						item_doc.save()
 
 
-@frappe.whitelist()
-def onload_dn_return():
-	pass
+
 
 
 
