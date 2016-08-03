@@ -78,7 +78,8 @@ doc_events = {
 	},
 	"Delivery Note": {
 		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add","glosel.scheme_management.dn_return_submit"],
-		"on_cancel":"glosel.scheme_management.dn_on_cancel"
+		"on_cancel":"glosel.scheme_management.dn_on_cancel",
+		"validate":"glosel.scheme_management.dn_validate"
 		# "on_update": ["glosel.scheme_management.dn_update"]
 		# "on_trash": "method"
 	},

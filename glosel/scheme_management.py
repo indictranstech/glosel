@@ -30,9 +30,12 @@ def so_submit(doc,method):
 			item_code=raw.item_code
 			item_group=item.item_group
 			brand=item.brand
+			so_customer=doc.customer
+			customer_group=doc.customer_group
+
 			qty=raw.qty
-			scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and item_code=%s and (company=%s or territory=%s)
-			 order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,customer_company,company_territory),as_dict=1)
+			scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s)
+			 order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group),as_dict=1)
 			for i in scheme_title:
 				if i :
 					scheme_name=i.get("title")
@@ -208,6 +211,15 @@ def dn_on_cancel(doc,method):
 					if raw1.company==doc.company:
 						raw1.qty=raw1.qty-raw.qty
 						item_doc.save()
+
+def dn_validate(doc,method):
+	frappe.errprint("Inside Dn validate ")
+
+	for raw in doc.get("items"):
+		# frappe.errprint("True")
+		frappe.errprint (raw.name)
+		frappe.delete_doc_if_exists("Delivery Note Item",raw.name,force=1)
+
 
 
 

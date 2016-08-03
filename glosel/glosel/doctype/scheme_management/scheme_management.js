@@ -6,3 +6,9 @@ frappe.ui.form.on('Scheme Management', {
 
 	}
 });
+
+cur_frm.fields_dict.customer.get_query = function(doc){
+	return {
+		query:"glosel.custom_py_methods.customer_filter"
+	}
+}

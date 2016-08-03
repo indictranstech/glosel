@@ -128,7 +128,6 @@ def item_autoname(brand):
 	
 	brand_code=str(frappe.db.get_value("Brand",{"name":brand},"code"))
 	company_code=str(frappe.db.get_value("Company",{"company_name":frappe.defaults.get_defaults().get("company")},"code"))
-	print "____________Company Code is_______________",company_code
 	# doc.item_code = brand_code + '0001'
 	substring_item_code = make_autoname(brand_code + '.####')
 	item_code=str(substring_item_code)+ str(company_code)
@@ -145,6 +144,11 @@ def employement_type_code_check(doc,method):
 	code=frappe.db.get_value("Employment Type",{"code":doc.code},"code")
 	if code==doc.code:
 		frappe.throw(_("Employment Code already present ,please choose diffrent code"))
+
+def customer_filter(doctype, txt, searchfield, start, page_len, filters):
+	data=frappe.db.sql("""select name from `tabCustomer`where customer_group!='Distributer' """)
+	return data
+
 
 
 
