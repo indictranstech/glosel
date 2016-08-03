@@ -214,11 +214,13 @@ def dn_on_cancel(doc,method):
 
 def dn_validate(doc,method):
 	frappe.errprint("Inside Dn validate ")
-
+	to_remove=[]
 	for raw in doc.get("items"):
-		# frappe.errprint("True")
-		frappe.errprint (raw.name)
-		frappe.delete_doc_if_exists("Delivery Note Item",raw.name,force=1)
+		if raw.is_free_item==1:
+			to_remove.append(raw)
+	[doc.remove(d) for d in to_remove]
+
+		
 
 
 
