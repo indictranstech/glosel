@@ -213,12 +213,18 @@ def dn_on_cancel(doc,method):
 						item_doc.save()
 
 def dn_validate(doc,method):
-	frappe.errprint("Inside Dn validate ")
-	to_remove=[]
-	for raw in doc.get("items"):
-		if raw.is_free_item==1:
-			to_remove.append(raw)
-	[doc.remove(d) for d in to_remove]
+	try:
+		frappe.errprint("Inside Dn validate ")
+		to_remove=[]
+		
+		for raw in doc.get("items"):
+			if raw.is_free_item==1 and doc.remove_scheme_ and is_return==0:
+				to_remove.append(raw)
+		[doc.remove(d) for d in to_remove]
+		doc.flags.ignore_validate_update_after_submit = True
+	except:
+		pass
+
 
 		
 

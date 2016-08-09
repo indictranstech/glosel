@@ -91,6 +91,7 @@ doc_events = {
 	"Sales Order": {
 	    "validate":"glosel.custom_py_methods.so_validate",
 		"before_submit":"glosel.scheme_management.so_submit",
+		"on_update_after_submit":"glosel.scheme_management.dn_on_update_after_submit",
 		# "on_submit":"glosel.custom_py_methods.so_submit"
 		# "on_cancel": "method",
 		# "on_trash": "method"
