@@ -3,7 +3,8 @@ import frappe
 import frappe.defaults
 from frappe import _
 
-def so_submit(doc,method):
+def so_update(doc,method):
+	doc.set('free_items', [])
 	# print " default company is " ,frappe.defaults.get_defaults().get("company")
 	# end customer object
 	customer=frappe.get_doc("Customer",doc.customer)
@@ -48,7 +49,7 @@ def so_submit(doc,method):
 					if int(qty)>=int(scheme.minimum_quantity):
 						raw.description=None
 						for scheme_raw in scheme.get("freebie_items"):
-							free_items = doc.append('items', {})
+							free_items = doc.append('free_items', {})
 							free_items.is_free_item=1
 							free_items.item_code=scheme_raw.item_code
 							free_items.item_name=scheme_raw.item_name
@@ -81,6 +82,30 @@ def so_submit(doc,method):
 
 							free_items.save()
 							# doc.save()
+def so_submit(doc,method):
+	roles=frappe.get_roles(frappe.session.user)
+	for role in roles:
+		print role 
+	if " Scheme Manager"  not in roles and doc.request_scheme_removal==1:
+		if doc.customer_group=="Distributer" or doc.customer_group=="Super Stockist":
+			frappe.throw(_("You can not submit Sales order when scheme removal Request is marked"))
+
+	for raw in doc.get("free_items"):
+		fi=doc.append("items")
+		fi.is_free_item=raw.is_free_item
+		fi.item_code=raw.item_code
+		fi.item_name=raw.item_name
+		fi.warehouse=raw.warehouse
+		fi.free_with=raw.free_with
+		fi.scheme=raw.scheme
+		fi.description=raw.description
+		fi.qty=raw.qty
+		fi.save()
+	doc.set('free_items', [])
+	raw.save()
+
+		
+
 
 
 def distributer_outstanding_add(doc,method):
