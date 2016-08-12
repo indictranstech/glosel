@@ -4,7 +4,18 @@ import frappe.defaults
 from frappe import _
 
 def so_update(doc,method):
-	doc.set('free_items', [])
+	print "on  update code -------------------------------------"
+	to_remove = []
+	
+	for d in doc.get("free_items"):
+		to_remove.append(d)
+	[doc.remove(d) for d in to_remove]
+	# doc.set('free_items',[])
+	# print "in save __________________________"
+	if doc.request_scheme_removal==1:
+		doc.scheme_removal_confirmation="Yes"
+	else:
+		doc.scheme_removal_confirmation="No"
 	# print " default company is " ,frappe.defaults.get_defaults().get("company")
 	# end customer object
 	customer=frappe.get_doc("Customer",doc.customer)
@@ -79,16 +90,20 @@ def so_update(doc,method):
 								raw.description=raw.description +"\n Free {0} {1}  ".format(free_items.qty,free_items.item_name)
 
 							free_items.rate=0
-
 							free_items.save()
-							# doc.save()
+
+
+								
+# 							# doc.save()
+# def so_before_submit(doc,method):
+# 	pass
+	
+		
 def so_submit(doc,method):
+	print "on submitt-!!!!!!!!!!!!!!!!!!!!!!!!!!--------------"
 	roles=frappe.get_roles(frappe.session.user)
-	for role in roles:
-		print role 
-	if " Scheme Manager"  not in roles and doc.request_scheme_removal==1:
-		if doc.customer_group=="Distributer" or doc.customer_group=="Super Stockist":
-			frappe.throw(_("You can not submit Sales order when scheme removal Request is marked"))
+	if " Scheme Manager" not in roles and doc.request_scheme_removal==1:
+		frappe.throw(_("You can not submit Sales order when scheme removal Request is marked"))
 
 	for raw in doc.get("free_items"):
 		fi=doc.append("items")
@@ -100,16 +115,24 @@ def so_submit(doc,method):
 		fi.scheme=raw.scheme
 		fi.description=raw.description
 		fi.qty=raw.qty
-		fi.save()
-	doc.set('free_items', [])
-	raw.save()
+	print "dsaaaaaaaaaaaa"
+	fi.save()
+	to_remove = []
+	for d in doc.get("free_items"):
+		to_remove.append(d)
+	[doc.remove(d) for d in to_remove]
 
-		
+	
 
+# def remove_free_items(doc, method):
+# 	print "remobe sahjkhaddhjkshjk"
+# 	doc.free_items = []
+
+	
 
 
 def distributer_outstanding_add(doc,method):
-	"""called on dn submit"""
+	print """called on dn submit"""
 	if doc.is_return==0:
 		flag=None
 		# print "Inside distributer_outstanding"
@@ -121,10 +144,8 @@ def distributer_outstanding_add(doc,method):
 					for raw1 in item_doc.get("distributer_outstanding"):
 						if raw1.company==doc.company:
 							raw1.qty=raw1.qty+raw.qty
-							flag=1
-							
-				 	if not flag :
-				 		
+							flag=1		
+				 	if not flag :	
 						do = item_doc.append('distributer_outstanding', {})
 						do.company=doc.company
 						do.qty=raw.qty
@@ -144,6 +165,7 @@ def distributer_outstanding_add(doc,method):
 
 									
 def dn_submit(doc,method):
+	print "dn -------------------------------------"
 	for raw in doc.get("items"):
 		if raw.is_free_item==1:
 			sml=frappe.new_doc("Scheme Management Log")
@@ -162,6 +184,7 @@ def dn_submit(doc,method):
 			sml.submit()
 
 def dn_update(doc,method):
+	print "on dn update code -------------------------------------"
 	if doc.is_return==1:
 		fflag=0
 		depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
@@ -177,6 +200,7 @@ def dn_update(doc,method):
 		# 			frappe.throw("You can not return only free Items")
 
 def dn_return_submit(doc,method):
+	print "on dn return code -------------------------------------"
 	# frappe.errprint("Inside DN return uodate")
 	if doc.is_return==1:
 		depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
@@ -222,11 +246,13 @@ def dn_return_submit(doc,method):
 
 								# frappe.errprint(raw1.qty)
 def find_divisible_number(qty,sc_min_qty):
+	print "on  find_divisible_number -------------------------------------"
 	for i in range(qty,sc_min_qty-1,-1):
 		if i%sc_min_qty==0:
 			return i
 
 def dn_on_cancel(doc,method):
+	print "on  cancwel -------------------------------------"
 	if doc.company!=frappe.defaults.get_defaults().get("company") and doc.is_return==0:
 		# if doc.company !="Glosel India PVT LTD":
 		for raw in doc.get("items"):
@@ -237,18 +263,16 @@ def dn_on_cancel(doc,method):
 						raw1.qty=raw1.qty-raw.qty
 						item_doc.save()
 
-def dn_validate(doc,method):
-	try:
-		frappe.errprint("Inside Dn validate ")
-		to_remove=[]
-		
-		for raw in doc.get("items"):
-			if raw.is_free_item==1 and doc.remove_scheme_ and is_return==0:
-				to_remove.append(raw)
-		[doc.remove(d) for d in to_remove]
-		doc.flags.ignore_validate_update_after_submit = True
-	except:
-		pass
+def remove_rows(doc,table):
+	print "on  remove -------------------------------------"
+	to_remove=[]
+	for raw in doc.get(table):
+		to_remove.append(raw)
+	if to_remove!=None:
+		for d in to_remove:
+			doc.remove(d) 
+	
+	
 
 
 		

@@ -134,6 +134,7 @@ def item_autoname(brand):
 	return item_code
 
 def so_validate(doc,method):
+	print "so validate 2222222222222222222222222222222222222222"
 	# print "Inside ------------------------"
 	if doc.company!=frappe.defaults.get_defaults().get("company"):
 		# print "Inside if "

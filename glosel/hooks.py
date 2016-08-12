@@ -92,8 +92,7 @@ doc_events = {
 	    "validate":"glosel.custom_py_methods.so_validate",
 		"on_update":"glosel.scheme_management.so_update",
 		# "on_update_after_submit":"glosel.scheme_management.dn_on_update_after_submit",
-		"on_submit":"glosel.scheme_management.so_submit"
-		# "on_cancel": "method",
+		"on_submit":"glosel.scheme_management.so_submit",
 		# "on_trash": "method"
 	},
 	"Employee": {
