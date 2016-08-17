@@ -89,9 +89,11 @@ doc_events = {
 		# "on_trash": "method"
 	},
 	"Sales Order": {
-	    "validate":"glosel.custom_py_methods.so_validate",
+	    "validate":["glosel.custom_py_methods.so_validate","glosel.scheme_management.so_validate"],
 		"on_update":"glosel.scheme_management.so_update",
+		# "after_save":"glosel.scheme_management.remove_rows",
 		# "on_update_after_submit":"glosel.scheme_management.dn_on_update_after_submit",
+		"before_submit":"glosel.scheme_management.so_before_submit",
 		"on_submit":"glosel.scheme_management.so_submit",
 		# "on_trash": "method"
 	},

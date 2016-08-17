@@ -2,14 +2,15 @@
 import frappe
 import frappe.defaults
 from frappe import _
-
+def so_validate(doc,method):
+	print "VAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlidaTtttttttttttttttttttttttttte"
+	
 def so_update(doc,method):
 	print "on  update code -------------------------------------"
-	to_remove = []
-	
-	for d in doc.get("free_items"):
-		to_remove.append(d)
-	[doc.remove(d) for d in to_remove]
+	doc.free_items=[]
+	# for d in doc.get("free_items"):
+	# 	to_remove.append(d)
+	# [doc.remove(d) for d in to_remove]
 	# doc.set('free_items',[])
 	# print "in save __________________________"
 	if doc.request_scheme_removal==1:
@@ -99,7 +100,7 @@ def so_update(doc,method):
 # 	pass
 	
 		
-def so_submit(doc,method):
+def so_before_submit(doc,method):
 	print "on submitt-!!!!!!!!!!!!!!!!!!!!!!!!!!--------------"
 	roles=frappe.get_roles(frappe.session.user)
 	if " Scheme Manager" not in roles and doc.request_scheme_removal==1:
@@ -115,12 +116,20 @@ def so_submit(doc,method):
 		fi.scheme=raw.scheme
 		fi.description=raw.description
 		fi.qty=raw.qty
-	print "dsaaaaaaaaaaaa"
-	fi.save()
-	to_remove = []
-	for d in doc.get("free_items"):
-		to_remove.append(d)
-	[doc.remove(d) for d in to_remove]
+		fi.save()
+		# doc.free_items=[]
+		doc.set('free_items',[])
+		# fi.save()
+	
+	# doc.save()
+	# print "dsaaaaaaaaaaaa"
+def so_submit(doc,method):
+	print "SUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUuubmit"
+	
+	
+
+
+	
 
 	
 
@@ -263,14 +272,16 @@ def dn_on_cancel(doc,method):
 						raw1.qty=raw1.qty-raw.qty
 						item_doc.save()
 
-def remove_rows(doc,table):
-	print "on  remove -------------------------------------"
+def remove_rows(doc,method):
+	frappe.errprint ("on  remove -------------------------------------")
 	to_remove=[]
-	for raw in doc.get(table):
+	for raw in doc.get("items"):
 		to_remove.append(raw)
-	if to_remove!=None:
-		for d in to_remove:
-			doc.remove(d) 
+	for d in to_remove:
+		doc.remove(d) 
+	# doc.save()
+	# doc.remove('free_items')
+	doc.save()
 	
 	
 
