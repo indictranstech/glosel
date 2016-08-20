@@ -4,19 +4,24 @@ import frappe.defaults
 from frappe import _
 def so_validate(doc,method):
 	print "VAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlidaTtttttttttttttttttttttttttte"
+	if doc.flag !=1:
+		doc.free_items=[]
 	
 def so_update(doc,method):
 	print "on  update code -------------------------------------"
-	doc.free_items=[]
+	# doc.free_items=[]
+	# frappe.db.sql("""delete from `tabSales Order Free Item` where parent=%s""",doc.name)
+	# print("Db Outpuuut",frappe.db.sql("""select * from `tabSales Order Free Item` where parent=%s""",doc.name))
+
 	# for d in doc.get("free_items"):
 	# 	to_remove.append(d)
 	# [doc.remove(d) for d in to_remove]
 	# doc.set('free_items',[])
 	# print "in save __________________________"
-	if doc.request_scheme_removal==1:
-		doc.scheme_removal_confirmation="Yes"
-	else:
-		doc.scheme_removal_confirmation="No"
+	# if doc.request_scheme_removal==1:
+	# 	doc.scheme_removal_confirmation="Yes"
+	# else:
+	# 	doc.scheme_removal_confirmation="No"
 	# print " default company is " ,frappe.defaults.get_defaults().get("company")
 	# end customer object
 	customer=frappe.get_doc("Customer",doc.customer)
@@ -102,6 +107,7 @@ def so_update(doc,method):
 		
 def so_before_submit(doc,method):
 	print "on submitt-!!!!!!!!!!!!!!!!!!!!!!!!!!--------------"
+	doc.flag=1
 	roles=frappe.get_roles(frappe.session.user)
 	if " Scheme Manager" not in roles and doc.request_scheme_removal==1:
 		frappe.throw(_("You can not submit Sales order when scheme removal Request is marked"))
@@ -117,8 +123,7 @@ def so_before_submit(doc,method):
 		fi.description=raw.description
 		fi.qty=raw.qty
 		fi.save()
-		# doc.free_items=[]
-		doc.set('free_items',[])
+		doc.free_items=[]
 		# fi.save()
 	
 	# doc.save()
