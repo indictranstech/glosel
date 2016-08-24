@@ -3,127 +3,75 @@ import frappe
 import frappe.defaults
 from frappe import _
 def so_validate(doc,method):
-	print "VAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlidaTtttttttttttttttttttttttttte"
-	if doc.flag !=1:
-		doc.free_items=[]
+	
 	
 def so_update(doc,method):
 	print "on  update code -------------------------------------"
-	# doc.free_items=[]
-	# frappe.db.sql("""delete from `tabSales Order Free Item` where parent=%s""",doc.name)
-	# print("Db Outpuuut",frappe.db.sql("""select * from `tabSales Order Free Item` where parent=%s""",doc.name))
-
-	# for d in doc.get("free_items"):
-	# 	to_remove.append(d)
-	# [doc.remove(d) for d in to_remove]
-	# doc.set('free_items',[])
-	# print "in save __________________________"
-	# if doc.request_scheme_removal==1:
-	# 	doc.scheme_removal_confirmation="Yes"
-	# else:
-	# 	doc.scheme_removal_confirmation="No"
-	# print " default company is " ,frappe.defaults.get_defaults().get("company")
-	# end customer object
-	customer=frappe.get_doc("Customer",doc.customer)
-	# gives distributor name who is actually a company to end customer
-	customer_company=doc.company
-	if customer_company!=frappe.defaults.get_defaults().get("company"):
-	# if customer_company!="Glosel India PVT LTD":
-	# gives distributer object which is actually a company on SO to find the terretory of distributor
-		customer_company_name=frappe.db.get_value("Customer",{"customer_name":customer_company},"name")
-		company=frappe.get_doc("Customer",customer_company_name)
-		# distributer's terretory as the end customer's terretory and customer's terretory will be same
-		company_territory=company.territory 
-	else:
-		company= frappe.defaults.get_defaults().get("company")
-		# company="Glosel India PVT LTD"
-		glosel_object=frappe.get_doc("Company",frappe.defaults.get_defaults().get("company"))
-		# glosel_object=frappe.get_doc("Company","Glosel India PVT LTD")
-		company_territory=customer.territory
-	for raw in doc.get("items"):
-		
-		if raw.is_free_item==0 and customer.customer_group!="Distributer":
-			# raw.description=None
-			item=frappe.get_doc("Item",raw.item_code)
-			item_code=raw.item_code
-			item_group=item.item_group
-			brand=item.brand
-			so_customer=doc.customer
-			customer_group=doc.customer_group
-
-			qty=raw.qty
-			scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s)
-			 order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group),as_dict=1)
-			for i in scheme_title:
-				if i :
-					scheme_name=i.get("title")
-					# frappe.errprint(scheme_name)
-					raw.scheme=scheme_name
-					# frappe.errprint("Applied Scheme")
-					# frappe.errprint(raw.scheme)
-					scheme=frappe.get_doc("Scheme Management",scheme_name)
-					# frappe.errprint(scheme_name)
-					if int(qty)>=int(scheme.minimum_quantity):
-						raw.description=None
-						for scheme_raw in scheme.get("freebie_items"):
-							free_items = doc.append('free_items', {})
-							free_items.is_free_item=1
-							free_items.item_code=scheme_raw.item_code
-							free_items.item_name=scheme_raw.item_name
-							if doc.company==frappe.defaults.get_defaults().get("company"):
-								free_items.warehouse=frappe.db.get_value("Item",{"item_code":raw.item_code},"default_warehouse")
-							else:
-								free_items.warehouse="Finished Goods" + " " + "-" + " " + doc.company[0:5]
-							# Source item name
-							free_items.free_with=raw.item_code
-							free_items.scheme=scheme_name
-							free_items.description="Free with Minimum {0} {1}".format(scheme.minimum_quantity,scheme.item_name)
-							new_qty=find_divisible_number(int(qty),int(scheme.minimum_quantity))
-							real_quantity=int((new_qty*scheme_raw.quantity)/scheme.minimum_quantity)
-							# real_quantity=int((qty*scheme_raw.quantity)/scheme.minimum_quantity)
-							# modulas=0
-							# if qty > scheme.minimum_quantity:
-
-							# 	modulas=real_quantity%scheme.minimum_quantity
-							# 	if real_quantity<scheme.minimum_quantity:
-							# 		modulas=0
-					
-							# free_items.qty=real_quantity-(modulas)
-							free_items.qty=real_quantity
-							if raw.description==None:
-								raw.description="Free {0} {1}  ".format(free_items.qty,free_items.item_name)
-							else:
-								raw.description=raw.description +"\n Free {0} {1}  ".format(free_items.qty,free_items.item_name)
-
-							free_items.rate=0
-							free_items.save()
-
-
-								
-# 							# doc.save()
-# def so_before_submit(doc,method):
-# 	pass
 	
+	
+	# for raw in doc.get("items"):
+		
+	# 	if raw.is_free_item==0 and customer.customer_group!="Distributer":
+	# 		item=frappe.get_doc("Item",raw.item_code)
+	# 		item_code=raw.item_code
+	# 		item_group=item.item_group
+	# 		brand=item.brand
+	# 		so_customer=doc.customer
+	# 		customer_group=doc.customer_group
+
+	# 		qty=raw.qty
+	# 		scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s)
+	# 		 order by CAST(priority as UNSIGNED) desc  limit 1""",(doc.transaction_date,doc.transaction_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group),as_dict=1)
+	# 		for i in scheme_title:
+	# 			if i :
+	# 				scheme_name=i.get("title")
+	# 				raw.scheme=scheme_name
+	# 				scheme=frappe.get_doc("Scheme Management",scheme_name)
+	# 				if int(qty)>=int(scheme.minimum_quantity):
+	# 					raw.description=None
+	# 					for scheme_raw in scheme.get("freebie_items"):
+	# 						free_items = doc.append('free_items', {})
+	# 						free_items.is_free_item=1
+	# 						free_items.item_code=scheme_raw.item_code
+	# 						free_items.item_name=scheme_raw.item_name
+	# 						if doc.company==frappe.defaults.get_defaults().get("company"):
+	# 							free_items.warehouse=frappe.db.get_value("Item",{"item_code":raw.item_code},"default_warehouse")
+	# 						else:
+	# 							free_items.warehouse="Finished Goods" + " " + "-" + " " + doc.company[0:5]
+	# 						free_items.free_with=raw.item_code
+	# 						free_items.scheme=scheme_name
+	# 						free_items.description="Free with Minimum {0} {1}".format(scheme.minimum_quantity,scheme.item_name)
+	# 						new_qty=find_divisible_number(int(qty),int(scheme.minimum_quantity))
+	# 						real_quantity=int((new_qty*scheme_raw.quantity)/scheme.minimum_quantity)
+							
+	# 						free_items.qty=real_quantity
+	# 						if raw.description==None:
+	# 							raw.description="Free {0} {1}  ".format(free_items.qty,free_items.item_name)
+	# 						else:
+	# 							raw.description=raw.description +"\n Free {0} {1}  ".format(free_items.qty,free_items.item_name)
+
+	# 						free_items.rate=0
+	# 						free_items.save()
 		
 def so_before_submit(doc,method):
 	print "on submitt-!!!!!!!!!!!!!!!!!!!!!!!!!!--------------"
-	doc.flag=1
-	roles=frappe.get_roles(frappe.session.user)
-	if " Scheme Manager" not in roles and doc.request_scheme_removal==1:
-		frappe.throw(_("You can not submit Sales order when scheme removal Request is marked"))
+	# doc.flag=1
+	# roles=frappe.get_roles(frappe.session.user)
+	# if " Scheme Manager" not in roles and doc.request_scheme_removal==1:
+	# 	frappe.throw(_("You can not submit Sales order when scheme removal Request is marked"))
 
-	for raw in doc.get("free_items"):
-		fi=doc.append("items")
-		fi.is_free_item=raw.is_free_item
-		fi.item_code=raw.item_code
-		fi.item_name=raw.item_name
-		fi.warehouse=raw.warehouse
-		fi.free_with=raw.free_with
-		fi.scheme=raw.scheme
-		fi.description=raw.description
-		fi.qty=raw.qty
-		fi.save()
-		doc.free_items=[]
+	# for raw in doc.get("free_items"):
+	# 	fi=doc.append("items")
+	# 	fi.is_free_item=raw.is_free_item
+	# 	fi.item_code=raw.item_code
+	# 	fi.item_name=raw.item_name
+	# 	fi.warehouse=raw.warehouse
+	# 	fi.free_with=raw.free_with
+	# 	fi.scheme=raw.scheme
+	# 	fi.description=raw.description
+	# 	fi.qty=raw.qty
+	# 	fi.save()
+	# 	doc.free_items=[]
 		# fi.save()
 	
 	# doc.save()
@@ -179,29 +127,54 @@ def distributer_outstanding_add(doc,method):
 
 									
 def dn_submit(doc,method):
-	print "dn -------------------------------------"
-	for raw in doc.get("items"):
-		if raw.is_free_item==1:
-			sml=frappe.new_doc("Scheme Management Log")
-			sml.date=doc.posting_date
-			sml.distributer=doc.company
-			sml.dn=doc.name
-			item_obj=frappe.get_doc("Item",raw.free_with)
-			sml.item=item_obj.item_code
-			for raw1 in doc.get("items"):
-				if raw1.item_code==sml.item and raw1.is_free_item!=1:
-					sml.item_qty=raw1.qty
-			sml.free_item=raw.item_code
-			sml.free_item_qty=raw.qty
-			sml.scheme=raw.scheme
-			sml.save()
-			sml.submit()
+	if doc.is_return=0:
+		print "dn -------------------------------------"
+		customer=frappe.get_doc("Customer",doc.customer)
+		customer_company=doc.company
+		if customer_company!=frappe.defaults.get_defaults().get("company"):
+			customer_company_name=frappe.db.get_value("Customer",{"customer_name":customer_company},"name")
+			company=frappe.get_doc("Customer",customer_company_name)
+			company_territory=company.territory 
+		else:
+			company=frappe.defaults.get_defaults().get("company")
+			glosel_object=frappe.get_doc("Company",frappe.defaults.get_defaults().get("company"))
+			company_territory=customer.territory
+
+		for raw in doc.get("items"):
+			if raw.is_free_item==0 and customer.customer_group!="Distributer":
+				item=frappe.get_doc("Item",raw.item_code)
+				item_code=raw.item_code
+				item_group=item.item_group
+				brand=item.brand
+				so_customer=doc.customer
+				customer_group=doc.customer_group
+				qty=None
+				amount=None
+				scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) and((quantity<=%s and minimum_quantity<=%s) or price<=%s)
+	 		 order by CAST(priority as UNSIGNED) desc,quantity limit 1""",(doc.transaction_date,doc.transaction_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group,qty,doc.minimum_quantity,amount),as_dict=1)
+				for i in scheme_title:
+					if i :
+						scheme_name=i.get("title")
+					scheme_obj=frappe.get_doc("Scheme Management",scheme_name)
+					if scheme_obj.apply_on=="Item Group":
+						main_object_name=scheme_obj.item_group
+					elif scheme_obj.apply_on=="Item Code":
+						main_object_name=scheme_obj.item_code
+					else: 
+						main_object_name=scheme_obj.brand
+						entries = frappe.db.get_all("Customer Scheme Record",
+    		filters={"customer":doc.customer, "main_object_name":main_object_name},
+  			fields=["name"])
+				 
+
+	
+
 
 def dn_update(doc,method):
 	print "on dn update code -------------------------------------"
-	if doc.is_return==1:
-		fflag=0
-		depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
+	# if doc.is_return==1:
+	# 	fflag=0
+	# 	depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
 		# for i in range(len(doc.items)):
 		# 	# frappe.errprint (i)
 		# 	if (doc.items[i].item_code==depend_doc.items[i].item_code) and (doc.items[i].rate==depend_doc.items[i].rate):
@@ -278,15 +251,17 @@ def dn_on_cancel(doc,method):
 						item_doc.save()
 
 def remove_rows(doc,method):
-	frappe.errprint ("on  remove -------------------------------------")
-	to_remove=[]
-	for raw in doc.get("items"):
-		to_remove.append(raw)
-	for d in to_remove:
-		doc.remove(d) 
+	pass
+
+	# frappe.errprint ("on  remove -------------------------------------")
+	# to_remove=[]
+	# for raw in doc.get("items"):
+	# 	to_remove.append(raw)
+	# for d in to_remove:
+	# 	doc.remove(d) 
+	# # doc.save()
+	# # doc.remove('free_items')
 	# doc.save()
-	# doc.remove('free_items')
-	doc.save()
 	
 	
 

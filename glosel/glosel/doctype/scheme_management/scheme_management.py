@@ -35,6 +35,12 @@ class SchemeManagement(Document):
 		elif self.apply_on=="Item Group":
 			self.item_code==None
 			self.brand =None
+		if self.scheme_on==	"Price":
+			self.quantity=None
+			self.minimum_qantity=None
+		elif self.scheme_on=="Quantity":
+			self.price=None
+
 		
 
 
