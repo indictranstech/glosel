@@ -12,9 +12,9 @@
   "docstatus": 0, 
   "doctype": "Custom Script", 
   "dt": "Delivery Note", 
-  "modified": "2016-07-14 17:51:12.458161", 
+  "modified": "2016-08-26 12:54:13.550346", 
   "name": "Delivery Note-Client", 
-  "script": "frappe.ui.form.on('Delivery Note', {\n\trefresh: function(frm) {\n\n\n\n\t}\n});\n\n\n", 
+  "script": "\n\n", 
   "script_type": "Client"
  }, 
  {

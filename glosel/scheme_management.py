@@ -3,6 +3,7 @@ import frappe
 import frappe.defaults
 from frappe import _
 def so_validate(doc,method):
+	pass
 	
 	
 def so_update(doc,method):
@@ -127,7 +128,7 @@ def distributer_outstanding_add(doc,method):
 
 									
 def dn_submit(doc,method):
-	if doc.is_return=0:
+	if doc.is_return==0:
 		print "dn -------------------------------------"
 		customer=frappe.get_doc("Customer",doc.customer)
 		customer_company=doc.company
@@ -148,23 +149,33 @@ def dn_submit(doc,method):
 				brand=item.brand
 				so_customer=doc.customer
 				customer_group=doc.customer_group
-				qty=None
-				amount=None
+				item_totalqty=frappe.db.sql("""select sum(dni.qty) from `tabDelivery Note` dn ,`tabDelivery Note Item` dni  where month(dn.posting_date)=month(curdate())  and dn.name=dni.parent and dn.customer=%s  and dn.docstatus=1  and dni.item_code=%s group by dni.item_code""",(doc.customer,item_code))
+				brand_total_qty=frappe.db.sql("""select sum(dni.qty) from `tabDelivery Note` dn ,`tabDelivery Note Item` dni  where month(dn.posting_date)=month(curdate())  and dn.name=dni.parent and dn.customer=%s  and dn.docstatus=1  and dni.brand=%s group by dni.brand""",(doc.customer,brand))
+				item_group_total_qty=frappe.db.sql("""select sum(dni.qty) from `tabDelivery Note` dn ,`tabDelivery Note Item` dni  where month(dn.posting_date)=month(curdate())  and dn.name=dni.parent and dn.customer=%s  and dn.docstatus=1  and dni.item_group=%s group by dni.item_group""",(doc.customer,brand))
+				item_amount=None
+				brand_amount=None
+				item_group_amount=None
 				scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) and((quantity<=%s and minimum_quantity<=%s) or price<=%s)
 	 		 order by CAST(priority as UNSIGNED) desc,quantity limit 1""",(doc.transaction_date,doc.transaction_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group,qty,doc.minimum_quantity,amount),as_dict=1)
 				for i in scheme_title:
 					if i :
 						scheme_name=i.get("title")
-					scheme_obj=frappe.get_doc("Scheme Management",scheme_name)
-					if scheme_obj.apply_on=="Item Group":
-						main_object_name=scheme_obj.item_group
-					elif scheme_obj.apply_on=="Item Code":
-						main_object_name=scheme_obj.item_code
-					else: 
-						main_object_name=scheme_obj.brand
-						entries = frappe.db.get_all("Customer Scheme Record",
-    		filters={"customer":doc.customer, "main_object_name":main_object_name},
-  			fields=["name"])
+				scheme_obj=frappe.get_doc("Scheme Management",scheme_name)
+				if scheme_obj.apply_on=="Item Group":
+					main_object_name=scheme_obj.item_group
+				elif scheme_obj.apply_on=="Item Code":
+					main_object_name=scheme_obj.item_code
+				else: 
+					main_object_name=scheme_obj.brand
+				main_object_criteria=scheme_obj.apply_on
+				for scheme_raw in scheme_obj.get("freebie_items"):
+					free_object_criteria=scheme_raw.apply_on
+					# free_object_name=scheme_raw.
+
+
+					# 	entries = frappe.db.get_all("Customer Scheme Record",
+    	# 	filters={"customer":doc.customer, "main_object_name":main_object_name},
+  			# fields=["name"])
 				 
 
 	
@@ -262,7 +273,8 @@ def remove_rows(doc,method):
 	# # doc.save()
 	# # doc.remove('free_items')
 	# doc.save()
-	
+def dn_validate(doc,method):
+	pass
 	
 
 
