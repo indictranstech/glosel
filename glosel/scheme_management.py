@@ -7,7 +7,9 @@ def so_validate(doc,method):
 	
 	
 def so_update(doc,method):
-	print "on  update code -------------------------------------"
+	pass
+
+	# print "on  update code -------------------------------------"
 	
 	
 	# for raw in doc.get("items"):
@@ -55,7 +57,8 @@ def so_update(doc,method):
 	# 						free_items.save()
 		
 def so_before_submit(doc,method):
-	print "on submitt-!!!!!!!!!!!!!!!!!!!!!!!!!!--------------"
+	pass
+	# print "on submitt-!!!!!!!!!!!!!!!!!!!!!!!!!!--------------"
 	# doc.flag=1
 	# roles=frappe.get_roles(frappe.session.user)
 	# if " Scheme Manager" not in roles and doc.request_scheme_removal==1:
@@ -78,7 +81,8 @@ def so_before_submit(doc,method):
 	# doc.save()
 	# print "dsaaaaaaaaaaaa"
 def so_submit(doc,method):
-	print "SUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUuubmit"
+	pass
+	# print "SUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUuubmit"
 	
 	
 
@@ -149,12 +153,14 @@ def dn_submit(doc,method):
 				brand=item.brand
 				so_customer=doc.customer
 				customer_group=doc.customer_group
-				item_totalqty=frappe.db.sql("""select sum(dni.qty) from `tabDelivery Note` dn ,`tabDelivery Note Item` dni  where month(dn.posting_date)=month(curdate())  and dn.name=dni.parent and dn.customer=%s  and dn.docstatus=1  and dni.item_code=%s group by dni.item_code""",(doc.customer,item_code))
-				brand_total_qty=frappe.db.sql("""select sum(dni.qty) from `tabDelivery Note` dn ,`tabDelivery Note Item` dni  where month(dn.posting_date)=month(curdate())  and dn.name=dni.parent and dn.customer=%s  and dn.docstatus=1  and dni.brand=%s group by dni.brand""",(doc.customer,brand))
-				item_group_total_qty=frappe.db.sql("""select sum(dni.qty) from `tabDelivery Note` dn ,`tabDelivery Note Item` dni  where month(dn.posting_date)=month(curdate())  and dn.name=dni.parent and dn.customer=%s  and dn.docstatus=1  and dni.item_group=%s group by dni.item_group""",(doc.customer,brand))
-				item_amount=None
-				brand_amount=None
-				item_group_amount=None
+				# item_totalqty=frappe.db.sql("""select sum(dni.qty) from `tabDelivery Note` dn ,`tabDelivery Note Item` dni  where month(dn.posting_date)=month(curdate())  and dn.name=dni.parent and dn.customer=%s  and dn.docstatus=1  and dni.item_code=%s group by dni.item_code""",(doc.customer,item_code))
+				# brand_total_qty=frappe.db.sql("""select sum(dni.qty) from `tabDelivery Note` dn ,`tabDelivery Note Item` dni  where month(dn.posting_date)=month(curdate())  and dn.name=dni.parent and dn.customer=%s  and dn.docstatus=1  and dni.brand=%s group by dni.brand""",(doc.customer,brand))
+				# item_group_total_qty=frappe.db.sql("""select sum(dni.qty) from `tabDelivery Note` dn ,`tabDelivery Note Item` dni  where month(dn.posting_date)=month(curdate())  and dn.name=dni.parent and dn.customer=%s  and dn.docstatus=1  and dni.item_group=%s group by dni.item_group""",(doc.customer,brand))
+				# item_amount=None
+				# brand_amount=None
+				# item_group_amount=None
+				# scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) and((quantity<=%s and minimum_quantity<=%s) or price<=%s)
+	 		#  order by CAST(priority as UNSIGNED) desc,quantity limit 1""",(doc.transaction_date,doc.transaction_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group,qty,doc.minimum_quantity,amount),as_dict=1)
 				scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) and((quantity<=%s and minimum_quantity<=%s) or price<=%s)
 	 		 order by CAST(priority as UNSIGNED) desc,quantity limit 1""",(doc.transaction_date,doc.transaction_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group,qty,doc.minimum_quantity,amount),as_dict=1)
 				for i in scheme_title:
@@ -182,7 +188,8 @@ def dn_submit(doc,method):
 
 
 def dn_update(doc,method):
-	print "on dn update code -------------------------------------"
+	pass
+	# print "on dn update code -------------------------------------"
 	# if doc.is_return==1:
 	# 	fflag=0
 	# 	depend_doc=frappe.get_doc("Delivery Note",doc.return_against)
