@@ -159,13 +159,14 @@ def dn_submit(doc,method):
 				# item_amount=None
 				# brand_amount=None
 				# item_group_amount=None
-				# scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) and((quantity<=%s and minimum_quantity<=%s) or price<=%s)
-	 		#  order by CAST(priority as UNSIGNED) desc,quantity limit 1""",(doc.transaction_date,doc.transaction_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group,qty,doc.minimum_quantity,amount),as_dict=1)
-				scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) and((quantity<=%s and minimum_quantity<=%s) or price<=%s)
-	 		 order by CAST(priority as UNSIGNED) desc,quantity limit 1""",(doc.transaction_date,doc.transaction_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group,qty,doc.minimum_quantity,amount),as_dict=1)
+				
+				scheme_title=frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) 
+	 		 order by CAST(priority as UNSIGNED) desc""",(doc.posting_date,doc.posting_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group),as_dict=1)
+
 				for i in scheme_title:
 					if i :
 						scheme_name=i.get("title")
+						frappe.errprint(scheme_name)
 				scheme_obj=frappe.get_doc("Scheme Management",scheme_name)
 				if scheme_obj.apply_on=="Item Group":
 					main_object_name=scheme_obj.item_group
@@ -282,6 +283,24 @@ def remove_rows(doc,method):
 	# doc.save()
 def dn_validate(doc,method):
 	pass
+def create_new_doc_dn_before_submit(doc,method):
+	if doc.is_return!=1:
+		for raw in doc.get("items"):
+			cwi=frappe.new_doc("Customerwise Item")
+			cwi.customer=doc.customer
+			cwi.brand=raw.brand
+			cwi.item_code=raw.item_code
+			cwi.item_group=raw.item_group
+			cwi.qty=raw.qty
+			cwi.effective_qty=raw.qty
+			cwi.amount=raw.amount
+			cwi.effective_amount=raw.amount
+			cwi.date=doc.posting_date
+			cwi.save()
+
+
+
+		
 	
 
 
