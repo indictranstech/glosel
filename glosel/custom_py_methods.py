@@ -149,6 +149,11 @@ def employement_type_code_check(doc,method):
 def customer_filter(doctype, txt, searchfield, start, page_len, filters):
 	data=frappe.db.sql("""select name from `tabCustomer`where customer_group!='Distributer' """)
 	return data
+@frappe.whitelist()
+def company_code(company):
+	company_code=str(frappe.db.get_value("Company",{"company_name":company},"code"))
+	return company
+
 
 
 

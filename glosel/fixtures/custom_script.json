@@ -12,18 +12,18 @@
   "docstatus": 0, 
   "doctype": "Custom Script", 
   "dt": "Delivery Note", 
-  "modified": "2016-08-26 12:54:13.550346", 
+  "modified": "2016-09-16 19:29:41.481924", 
   "name": "Delivery Note-Client", 
-  "script": "\n\n", 
+  "script": "\ncur_frm.add_fetch(\"company\",\"code\",\"cc\")\n", 
   "script_type": "Client"
  }, 
  {
   "docstatus": 0, 
   "doctype": "Custom Script", 
   "dt": "Purchase Order", 
-  "modified": "2016-07-14 19:34:03.451968", 
+  "modified": "2016-09-16 19:30:03.521256", 
   "name": "Purchase Order-Client", 
-  "script": "frappe.ui.form.on(\"Purchase Order Item\",\"item_code\" ,function(frm,cdt,cdn){\n\tif (cur_frm.doc.supplier==\"\")\n\t{\n\tfrappe.throw(__(\"Please Enter Supplier Name\"))\t\n\t}\n\titems=locals[cdt][cdn]\n\treturn frappe.call({\n\t\t\tmethod: \"glosel.api.fetch_supplier_uom\",\n\t\t\targs: {\n\t\t\t\tsupplier: frm.doc.supplier,\n\t\t\t\titem:items.item_code\n\t\t\t},\n\t\t\tcallback: function(r) {\n\t\t\t\tif(r.message){\n\t\t\t\t\t// console.log(r.message)\n\t\t\t\t\t// console.log(items.unit_of_measure)\n\t\t\t\t\t// items.unit_of_measure=r.message\n\t\t\t\t\t items.uom=r.message\n\t\t\t\t\t// console.log(items.uom)\n\t\t\t\t\t// cur_frm.refresh_fields()\n\t\t\t\t\t//frappe.model.set_value(cdt, cdn, \"uom\", r.message);\n\t\t\t\t\tconsole.log(\"before refresh\",items.uom)\n\t\t\t\t\tcur_frm.refresh_field(\"items\")\n\t\t\t\t\tconsole.log(\"after Refresh\",items.uom)\n\n\t\t\t\t}\n\t\t\t}\n\t\t});\n})", 
+  "script": "cur_frm.add_fetch(\"company\",\"code\",\"cc\")\nfrappe.ui.form.on(\"Purchase Order Item\",\"item_code\" ,function(frm,cdt,cdn){\n\tif (cur_frm.doc.supplier==\"\")\n\t{\n\tfrappe.throw(__(\"Please Enter Supplier Name\"))\t\n\t}\n\titems=locals[cdt][cdn]\n\treturn frappe.call({\n\t\t\tmethod: \"glosel.api.fetch_supplier_uom\",\n\t\t\targs: {\n\t\t\t\tsupplier: frm.doc.supplier,\n\t\t\t\titem:items.item_code\n\t\t\t},\n\t\t\tcallback: function(r) {\n\t\t\t\tif(r.message){\n\t\t\t\t\t// console.log(r.message)\n\t\t\t\t\t// console.log(items.unit_of_measure)\n\t\t\t\t\t// items.unit_of_measure=r.message\n\t\t\t\t\t items.uom=r.message\n\t\t\t\t\t// console.log(items.uom)\n\t\t\t\t\t// cur_frm.refresh_fields()\n\t\t\t\t\t//frappe.model.set_value(cdt, cdn, \"uom\", r.message);\n\t\t\t\t\tconsole.log(\"before refresh\",items.uom)\n\t\t\t\t\tcur_frm.refresh_field(\"items\")\n\t\t\t\t\tconsole.log(\"after Refresh\",items.uom)\n\n\t\t\t\t}\n\t\t\t}\n\t\t});\n})", 
   "script_type": "Client"
  }, 
  {
@@ -48,9 +48,9 @@
   "docstatus": 0, 
   "doctype": "Custom Script", 
   "dt": "Item", 
-  "modified": "2016-07-21 15:48:20.041900", 
+  "modified": "2016-09-17 12:49:33.560959", 
   "name": "Item-Client", 
-  "script": "frappe.ui.form.on(\"Item\",\"brand\" ,function(frm){\n\tconsole.log(\"ffff\",frm.doc.brand)\n \tfrappe.call({\n \t\tmethod:\"glosel.custom_py_methods.item_autoname\",\n \t\targs:{\n \t\t\t\"brand\":frm.doc.brand\n \t\t},\n \t\tcallback: function(r) {\n \t\t\t\tif(r.message){\n \t\t\t\t\t console.log(r.message)\n \t\t\t\t\t//cur_frm.doc.item_code=r.message\n                                          cur_frm.set_value(\"item_code\",r.message)\n \t\t\t\t\t//console.log(items.uom)\n \t\t\t\t\t// cur_frm.refresh_fields()\n \t\t\t\t}\n \t\t\t}\n \t\t});\n \t})", 
+  "script": "frappe.ui.form.on(\"Item\",\"brand\" ,function(frm){\n \tconsole.log(\"ffff\",frm.doc.brand)\n \tfrappe.call({\n \t\tmethod:\"glosel.custom_py_methods.item_autoname\",\n \t\targs:{\n \t\t\t\"brand\":frm.doc.brand\n \t\t},\n \t\tcallback: function(r) {\n \t\t\t\tif(r.message){\n \t\t\t\t\t// console.log(r.message)\n \t\t\t\t\tfrm.doc.item_code=r.message\n \t\t\t\t\tconsole.log(items.uom)\n \t\t\t\t\t// cur_frm.refresh_fields()\n \t\t\t\t}\n \t\t\t}\n \t\t});\t})", 
   "script_type": "Client"
  }, 
  {
@@ -60,6 +60,78 @@
   "modified": "2016-06-14 16:41:57.754889", 
   "name": "Process Payroll-Client", 
   "script": "", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Sales Order", 
+  "modified": "2016-09-17 13:26:01.584738", 
+  "name": "Sales Order-Client", 
+  "script": "cur_frm.add_fetch(\"company\",\"code\",\"cc\")\nfrappe.ui.form.on(\"Sales Order\",\"is_pro_forma\" ,function(frm){\n\nif (cur_frm.doc.is_pro_forma==1){\n     cur_frm.set_value(\"naming_series\",\"PFI.cc./CS/1617/\")\n} else {\n\n    cur_frm.set_value(\"naming_series\",\"SO.cc./CS/1617/\")\n    cur_frm.refresh_fields()\n}\n})", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Sales Invoice", 
+  "modified": "2016-09-17 15:04:31.670387", 
+  "name": "Sales Invoice-Client", 
+  "script": "cur_frm.add_fetch(\"company\",\"code\",\"cc\")\nfrappe.ui.form.on(\"Sales Invoice\",\"refresh\" ,function(frm){\n\nif (cur_frm.doc.is_return==1){\n     cur_frm.set_value(\"naming_series\",\"SRT.cc./CS/1617/\")\n} else {\n\n    cur_frm.set_value(\"naming_series\",\"SI.cc./CS/1617/\")\n    cur_frm.refresh_fields()\n}\n})", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Purchase Invoice", 
+  "modified": "2016-09-16 19:31:08.788059", 
+  "name": "Purchase Invoice-Client", 
+  "script": "cur_frm.add_fetch(\"company\",\"code\",\"cc\")", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Purchase Receipt", 
+  "modified": "2016-09-16 19:31:29.518454", 
+  "name": "Purchase Receipt-Client", 
+  "script": "cur_frm.add_fetch(\"company\",\"code\",\"cc\")", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Quotation", 
+  "modified": "2016-09-16 19:31:51.190891", 
+  "name": "Quotation-Client", 
+  "script": "cur_frm.add_fetch(\"company\",\"code\",\"cc\")", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Journal Entry", 
+  "modified": "2016-09-17 16:09:47.162169", 
+  "name": "Journal Entry-Client", 
+  "script": "cur_frm.add_fetch(\"company\",\"code\",\"cc\")\nfrappe.ui.form.on(\"Journal Entry\",\"refresh\" ,function(frm){\n\nif (cur_frm.doc.voucher_type==\"Journal Entry\"){\n     cur_frm.set_value(\"naming_series\",\"JV.cc./1617/\")\n} \nelse if   (cur_frm.doc.voucher_type==\"Cash Entry\"){\n\n    cur_frm.set_value(\"naming_series\",\"CPV.cc./1617/\")\n    cur_frm.refresh_fields()\n}\nelse if   (cur_frm.doc.voucher_type==\"Debit Note\"){\n\n    cur_frm.set_value(\"naming_series\",\"DBN.cc./1617/\")\n    cur_frm.refresh_fields()\n}\nelse if   (cur_frm.doc.voucher_type==\"Credit Note\"){\n\n    cur_frm.set_value(\"naming_series\",\"CRN.cc./1617/\")\n    cur_frm.refresh_fields()\n}\n})\nfrappe.ui.form.on(\"Journal Entry\",\"voucher_type\" ,function(frm){\n\nif (cur_frm.doc.voucher_type==\"Journal Entry\"){\n     cur_frm.set_value(\"naming_series\",\"JV.cc./1617/\")\n} \nelse if   (cur_frm.doc.voucher_type==\"Cash Entry\"){\n\n    cur_frm.set_value(\"naming_series\",\"CPV.cc./1617/\")\n    cur_frm.refresh_fields()\n}\nelse if   (cur_frm.doc.voucher_type==\"Debit Note\"){\n\n    cur_frm.set_value(\"naming_series\",\"DBN.cc./1617/\")\n    cur_frm.refresh_fields()\n}\nelse if   (cur_frm.doc.voucher_type==\"Credit Note\"){\n\n    cur_frm.set_value(\"naming_series\",\"CRN.cc./1617/\")\n    cur_frm.refresh_fields()\n}\n})", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Stock Entry", 
+  "modified": "2016-09-17 16:10:53.739497", 
+  "name": "Stock Entry-Client", 
+  "script": "cur_frm.add_fetch(\"company\",\"code\",\"cc\")", 
+  "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Material Request", 
+  "modified": "2016-09-17 16:11:12.236025", 
+  "name": "Material Request-Client", 
+  "script": "cur_frm.add_fetch(\"company\",\"code\",\"cc\")", 
   "script_type": "Client"
  }
 ]

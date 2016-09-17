@@ -84,10 +84,10 @@ def dn_submit(doc,method):
 				if scheme_obj.apply_on=="Item Group" and scheme_on=="Quantity":
 					quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and item_group=%s""",(doc.customer,scheme_obj.item_group))
 
-				elif scheme_obj.apply_on=="Item Code" and scheme_on=="Quantity:
+				elif scheme_obj.apply_on=="Item Code" and scheme_on=="Quantity":
 					# main_object_name=scheme_obj.item_code
 					quantity=quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and item_code=%s""",(doc.customer,scheme_obj.item_code))
-				elif scheme_obj.apply_on=="Brand" and scheme_on=="Quantity: 
+				elif scheme_obj.apply_on=="Brand" and scheme_on=="Quantity": 
 					# main_object_name=scheme_obj.brand
 					quantity=quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and brand=%s""",(doc.customer,scheme_obj.brand))
 				if quantity>=scheme_obj.minimum_quantity and quantity>=scheme_obj.quantity:

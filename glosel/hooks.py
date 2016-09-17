@@ -149,4 +149,4 @@ doc_events = {
 # 	"frappe.desk.doctype.event.event.get_events": "glosel.event.get_events"
 # }
 
-fixtures=['Custom Script','Property Setter','Custom Field','Print Format','Role','Customer Group']
+fixtures=['Custom Script','Property Setter','Custom Field','Print Format','Role','Customer Group','Naming Series']
