@@ -12,9 +12,9 @@
   "docstatus": 0, 
   "doctype": "Custom Script", 
   "dt": "Delivery Note", 
-  "modified": "2016-09-16 19:29:41.481924", 
+  "modified": "2016-09-19 11:51:23.637923", 
   "name": "Delivery Note-Client", 
-  "script": "\ncur_frm.add_fetch(\"company\",\"code\",\"cc\")\n", 
+  "script": "cur_frm.add_fetch(\"company\",\"code\",\"cc\")\nfrappe.ui.form.on(\"Delivery Note\", {\n    get_schemes: function(frm) {\n        frappe.msgprint(\"<b>Schemes Avalable</b>\")\n       frappe.call({\n        method: \"glosel.custom_py_methods.get_schemes\",\n        args: {\"doc\": frm.doc},\n        callback: function(r, rt){\n              frm.refresh()\n          }\n        });\n    },\n\n});", 
   "script_type": "Client"
  }, 
  {
