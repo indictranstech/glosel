@@ -1,0 +1,5 @@
+{
+	"js/glosel.min.js": [
+		"public/js/templates/render_free_item.html"
+	]
+}

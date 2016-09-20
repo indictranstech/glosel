@@ -1,0 +1,41 @@
+<p><b>Free Items:</b></p>
+<p>Scheme Type: {{ scheme_type }} </p>
+
+{% if (scheme_type == "Fix") { %}
+<table class="table table-bordered table-condensed" id="header-fixed">
+    <thead>
+        <tr>
+            <td align="pull-right"><b>Sr. No</b></td>
+            <td align="pull-left"><b>Item Code</b></td>
+        </tr>
+    </thead>
+    <tbody>
+ {% for(var i=0, l=free_item.length; i < l; i++) { %}
+        <tr>
+            <td>{{ i+1 }}	</td><td>{{ free_item[i].item_code }}</td>
+        </tr>
+{% } %}
+    </tbody>
+</table>
+{% } %} 
+
+{% if (scheme_type == "Selective") { %}
+<table class="table table-bordered table-condensed" id="header-fixed">
+    <thead>
+        <tr>
+            <td align="pull-right"><b>Sr. No</b></td>
+            <td align="pull-right"><b>Select</b></td>
+            <td align="pull-left"><b>Item Code</b></td>
+        </tr>
+    </thead>
+    <tbody>
+ {% for(var i=0, l=free_item.length; i < l; i++) { %}
+        <tr>
+            <td>{{ i+1 }}	</td>
+            <td><input type="checkbox" value={{ free_item[i].item_code }}></td>
+            <td>{{ free_item[i].item_code }}</td>
+        </tr>
+{% } %}
+    </tbody>
+</table>
+{% } %} 
