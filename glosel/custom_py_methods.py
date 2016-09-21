@@ -154,49 +154,5 @@ def company_code(company):
 	company_code=str(frappe.db.get_value("Company",{"company_name":company},"code"))
 	return company
 
-@frappe.whitelist()
-def get_schemes(doc):
-	dl = frappe.db.sql("""select name,title,apply_on, valid_from, valid_upto,scheme_type from `tabScheme Management` where active=1 and valid_upto > now();""",as_dict=1, debug=1)
-	# frappe.msgprint(dl)
-	return dl
-	# doc_json = json.loads(doc)
-	# frappe.msgprint(doc_json["name"])
-	# doc_dn = frappe.get_doc("Delivery Note", doc_json["name"])
-	# doc_dn.set('schemes', [])
-	# for d in dl:
-	# 	nl = doc_dn.append('schemes', {})
-	# 	nl.apply_on = d.apply_on
-	# 	nl.scheme_name = d.name
-	# 	frappe.msgprint(d.apply_on)
-	# doc_dn.terms="asv"
-	# doc_dn.save()
-
-
-	# dl = frappe.db.sql("""select name,customer,date_of_receipt, date_of_collection,job_card,functional_location,functional_location_code,
-	# 			equipment,equipment_make,serial_number,equipment_code,
-	# 			conservation_protection_system, sample_taken_from, oil_temperature, winding_temperature,
-	# 			remarks from `tabSample Entry Register` where docstatus = 0 and order_id='%s' %s"""%(self.order, condition),as_dict=1, debug=1)
-
-	# 		self.set('sample_entry_creation_tool_details', [])
-
-	# 		for d in dl:
-	# 			nl = self.append('sample_entry_creation_tool_details', {})
-	# 			nl.sample_id = d.name
-	# 			nl.customer = d.customer
-	# 			nl.job_card = d.job_card
-	# 			nl.functional_location=d.functional_location
-	# 			nl.functional_location_code = d.functional_location_code
-
-
-	
-
-
-
-
-
-
-
-
-
 	
 
