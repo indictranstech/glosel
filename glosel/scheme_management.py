@@ -156,9 +156,10 @@ def dn_on_cancel(doc,method):
 
 
 def dn_validate(doc,method):
-	frappe.msgprint("In dn validate")
-	doc.schemes=[]
+	# frappe.msgprint("In dn validate")
+	# doc.schemes=[]
 	# create_customerwise_item_on_dn_submit(doc,method)
+	pass
 
 	dl = frappe.db.sql("""select name,title,apply_on, valid_from, valid_upto,scheme_type from `tabScheme Management` where active=1 and valid_upto > now();""",as_dict=1, debug=1)
 

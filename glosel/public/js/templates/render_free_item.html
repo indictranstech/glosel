@@ -20,6 +20,7 @@
 {% } %} 
 
 {% if (scheme_type == "Selective") { %}
+<button class="btn btn-default btn-sm" id="add-selected-item">Select</button>
 <table class="table table-bordered table-condensed" id="header-fixed">
     <thead>
         <tr>
@@ -32,7 +33,9 @@
  {% for(var i=0, l=free_item.length; i < l; i++) { %}
         <tr>
             <td>{{ i+1 }}	</td>
-            <td><input type="checkbox" value={{ free_item[i].item_code }}></td>
+            <td>
+                <input type="radio" class="select" id="_select" value={{free_item[i].item_code}} name="_select">
+                </td>
             <td>{{ free_item[i].item_code }}</td>
         </tr>
 {% } %}
