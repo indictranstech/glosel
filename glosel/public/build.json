@@ -1,0 +1,6 @@
+{
+	"js/glosel.desk.min.js": [
+		"public/micro-templates/street_view.html",
+		"public/js/leaflet.js"
+	]
+}

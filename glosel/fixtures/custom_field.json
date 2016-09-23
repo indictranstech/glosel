@@ -1106,7 +1106,7 @@
   "modified": "2016-06-01 18:15:47.392848", 
   "name": "Employee-contact_details_history_label", 
   "no_copy": 0, 
-  "options": "<h5 class=\"text-muted\">Contact Details History</h5>", 
+  "options": "", 
   "permlevel": 0, 
   "precision": null, 
   "print_hide": 0, 

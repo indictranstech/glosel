@@ -4,6 +4,8 @@ import frappe.utils
 from frappe import _
 from frappe.model.naming import make_autoname
 import frappe.defaults
+import phonenumbers
+from frappe.utils import encode
 # from erpnext.selling.doctype.customer.customer import get_customer_outstanding
 
 @frappe.whitelist(allow_guest=True)
@@ -128,11 +130,11 @@ def item_autoname(brand):
 	
 	brand_code=str(frappe.db.get_value("Brand",{"name":brand},"code"))
 	company_code=str(frappe.db.get_value("Company",{"company_name":frappe.defaults.get_defaults().get("company")},"code"))
-	# doc.item_code = brand_code + '0001'
+ 	doc.item_code = brand_code + '0001'
 	substring_item_code = make_autoname(brand_code + '.####')
 	item_code=str(substring_item_code)+ str(company_code)
 	return item_code
-
+	
 def so_validate(doc,method):
 	print "so validate 2222222222222222222222222222222222222222"
 	# print "Inside ------------------------"
@@ -150,19 +152,46 @@ def customer_filter(doctype, txt, searchfield, start, page_len, filters):
 	data=frappe.db.sql("""select name from `tabCustomer`where customer_group!='Distributer' """)
 	return data
 
+def make_title_case(doc, method):
+	title_case_format(doc);
 
+def title_case_documents():
+	documents = {	
+					"Customer":"customer_name", "Employee":"employee_name",
+					"Sales Person":"sales_person_name", "Lead":"lead_name", 
+					"User":"full_name","Supplier": "supplier_name", 
+					"Contact":"first_name", "Sales Partner":"partner_name"
+				}
+	return documents
 
+def title_case_format(doc):
+	docs = title_case_documents()
+	if doc.doctype in docs.keys():
+		field = docs[doc.doctype]
+		if field:
+			doc.update({field: doc.get(field).title()})
 
+def generate_calling_code(doc, method):
+	country = frappe.defaults.get_defaults().get("country")
+	docs = phone_format_docs()
+	if doc.doctype in docs:
+		if country:
+			country_code = (frappe.db.get_value("Country", country, "code")).upper()
+			field = docs[doc.doctype]
+			if field and type(field) == list:
+				for f in field:
+					if doc.get(f):				
+						x = phonenumbers.parse(encode(doc.get(f)), (encode(country_code)))
+						no_format = phonenumbers.format_number(x, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+						doc.update({f: no_format})
+			elif field and doc.get(field):
+				x = phonenumbers.parse(encode(doc.get(field)), (encode(country_code)))
+				no_format = phonenumbers.format_number(x, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+				doc.update({field: no_format})
 
-	
-
-
-
-
-
-
-
-
-
-	
-
+def phone_format_docs():
+	docs = 	{
+				"Address":"phone", "Contact":["mobile_no", "phone"], "Employee": "cell_number",
+				"Lead": ["phone", "mobile_no"]
+			}
+	return docs
