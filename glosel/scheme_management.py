@@ -156,10 +156,12 @@ def dn_on_cancel(doc,method):
 
 
 def dn_validate(doc,method):
-	# frappe.msgprint("In dn validate")
+	frappe.msgprint("In dn validate")
+	# add_free_item(doc,method)
+
 	# doc.schemes=[]
 	# create_customerwise_item_on_dn_submit(doc,method)
-	pass
+	# pass
 
 	# dl = frappe.db.sql("""select name,title,apply_on, valid_from, valid_upto,scheme_type from `tabScheme Management` where active=1 and valid_upto > now();""",as_dict=1, debug=1)
 
@@ -380,21 +382,55 @@ def get_schemes(doc):
 	# 			nl.functional_location=d.functional_location
 	# 			nl.functional_location_code = d.functional_location_code
 
+def dn_before_submit(doc,method):
+	# create_customerwise_item_on_dn_submit(doc,method)
+	add_free_item(doc,method)
+
+def add_free_item(doc,method):
+	# print "\n\n\n***********************dn_before_submit"
+	dn_items = []
+	# doc.set('items', [])
+	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
+	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
+	frappe.msgprint(cmp)
+	for raw in doc.get("schemes_selected"):
+		item = frappe.get_doc("Item",raw.item_code)
+		dn_items.append(raw.item_code)
+		nl = doc.append('items', {})
+		nl.item_code = raw.item_code
+		nl.item_name = item.item_name
+		nl.description = item.description
+		nl.stock_uom = item.stock_uom
+		nl.warehouse = item.default_warehouse
+		nl.expense_account = default_expense_account
+		nl.cost_center = cost_center
+		# frappe.msgprint(raw.item_code)
+		nl.qty = raw.qty
+		nl.free_item_of_scheme = raw.scheme_name
+		scheme = frappe.get_doc("Scheme Management",raw.scheme_name)
+		nl.claim_for_qty = raw.qty*scheme.quantity
+		print "claim_for_qty",raw.qty*scheme.quantity
+	frappe.msgprint("dn_before_submit")
+
+
 def create_customerwise_item_on_dn_submit(doc,method):
 	if doc.is_return!=1:
 		for raw in doc.get("items"):
-			cwi=frappe.new_doc("Customerwise Item")
-			cwi.customer=doc.customer
-			cwi.brand=raw.brand
-			cwi.item_code=raw.item_code
-			cwi.item_group=raw.item_group
-			cwi.qty=raw.qty
-			cwi.effective_qty=raw.qty
-			cwi.amount=raw.amount
-			cwi.effective_amount=raw.amount
-			cwi.date=doc.posting_date
-			cwi.delivery_note=doc.name
-			cwi.save()
+			if not raw.free_item_of_scheme:
+				cwi=frappe.new_doc("Customerwise Item")
+				cwi.customer=doc.customer
+				cwi.brand=raw.brand
+				cwi.item_code=raw.item_code
+				cwi.item_group=raw.item_group
+				cwi.qty=raw.qty
+				cwi.effective_qty=raw.qty
+				cwi.amount=raw.amount
+				cwi.effective_amount=raw.amount
+				cwi.date=doc.posting_date
+				cwi.delivery_note=doc.name
+				cwi.save()
+			if raw.free_item_of_scheme:
+				pass
 
 
 
