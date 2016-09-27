@@ -43,7 +43,7 @@
 </table>
 {% } %} 
 
-{% if (scheme_type == "Selective" && apply_on == "Item Group") { %}
+{% if (scheme_type == "Selective" && (apply_on == "Item Group" || apply_on == "Brand")) { %}
 <button class="btn btn-default btn-sm" id="add-selected-item">Select</button>
 <table class="table table-bordered table-condensed" id="header-fixed">
     <thead>
