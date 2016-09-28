@@ -410,6 +410,7 @@ def add_free_item(doc,method):
 		scheme = frappe.get_doc("Scheme Management",raw.scheme_name)
 		nl.claim_for_qty = raw.qty*scheme.quantity
 		#add claim for price
+		# print scheme.amount/
 		print "claim_for_qty",raw.qty*scheme.quantity
 	frappe.msgprint("dn_before_submit")
 
@@ -440,14 +441,14 @@ def get_free_item_by_brand(doc,apply_on,scheme_name):
 		brand_list = ""
 		for k in dl:
 			brand_list=brand_list+"'"+k['brand']+"'"+","
-			print k['brand']
+			# print k['brand']
 		brand_list = brand_list[:-1]
 		dl_item = frappe.db.sql(""" select item_code from `tabItem` where brand in ({0})""".format(brand_list),as_dict=1, debug=1)
-		print "dl_item",dl_item
+		# print "dl_item",dl_item
 		return dl_item
 	if apply_on=="Item Code":
 		dl = frappe.db.sql("""select item_code from `tabScheme Management Item` where parent='{0}' and apply_on='Item Code' and item_code IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
-		print "\n",dl
+		# print "\n",dl
 		return dl
 
 	if apply_on=="Item Group":
@@ -455,11 +456,11 @@ def get_free_item_by_brand(doc,apply_on,scheme_name):
 		item_group_list = ""
 		for k in dl:
 			item_group_list=item_group_list+"'"+k['item_group']+"'"+","
-			print k['item_group']
+			# print k['item_group']
 		item_group_list = item_group_list[:-1]
-		print "item_group_list",item_group_list
+		# print "item_group_list",item_group_list
 		dl_item = frappe.db.sql("""select item_code from `tabItem` where item_group in ({0})""".format(item_group_list),as_dict=1, debug=1)
-		print "dl_item*****************************",dl_item
+		# print "dl_item*****************************",dl_item
 		return dl_item
 
 		
