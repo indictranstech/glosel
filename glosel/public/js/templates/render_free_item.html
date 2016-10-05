@@ -1,7 +1,9 @@
-<p><b>Free Items:</b></p>
-<p>Scheme Type: {{ scheme_type }} </p>
+<div class="row">
+    <div class="col-md-4 text-left"><b>Free Items:</b></div>
+    <div class="col-md-6 text-right">Scheme Type: {{ scheme_type }}</div>
+</div>
 
-{% if (scheme_type == "Fix") { %}
+{% if (scheme_type == "Fix" && apply_on == "Item Code") { %}
 <table class="table table-bordered table-condensed" id="header-fixed">
     <thead>
         <tr>
@@ -18,6 +20,27 @@
     </tbody>
 </table>
 {% } %} 
+{% if (scheme_type == "Fix" && (apply_on == "Item Group" || apply_on == "Brand")) { %}
+<table class="table table-bordered table-condensed" id="header-fixed">
+    <thead>
+        <tr>
+            <td align="pull-right"><b>Sr. No</b></td>
+            <td align="pull-left"><b>Item Code</b></td>
+            <td align="pull-left"><b>Item Name</b></td>
+            <td align="pull-left"><b>Manufacturer Product Code</b></td>
+        </tr>
+    </thead>
+    <tbody>
+ {% for(var i=0, l=free_item.length; i < l; i++) { %}
+        <tr>
+            <td>{{ i+1 }}   </td><td>{{ free_item[i].item_code }}</td>
+            <td>{{ free_item[i].item_name }}  </td>
+            <td>{{ free_item[i].manufacturer_part_no }}</td>
+        </tr>
+{% } %}
+    </tbody>
+</table>
+{% } %} 
 
 {% if (scheme_type == "Selective" && apply_on == "Item Code") { %}
 <button class="btn btn-default btn-sm" id="add-selected-item">Select</button>
@@ -27,16 +50,22 @@
             <td align="pull-right"><b>Sr. No</b></td>
             <td align="pull-right"><b>Select</b></td>
             <td align="pull-left"><b>Item Code</b></td>
+            <td align="pull-left"><b>Qty</b></td>
+            <td align="pull-left"><b>Item Name</b></td>
+            <td align="pull-left"><b>Manufacturer Product Code</b></td>
         </tr>
     </thead>
     <tbody>
  {% for(var i=0, l=free_item.length; i < l; i++) { %}
         <tr>
-            <td>{{ i+1 }}   </td>
+            <td>{{ i+1 }}</td>
             <td>
                 <input type="radio" class="select" id="_select" value={{free_item[i].item_code}} name="_select">
                 </td>
             <td>{{ free_item[i].item_code }}</td>
+            <td>{{ free_item[i].effective_qty }}</td>
+            <td>{{ free_item[i].item_name }}  </td>
+            <td>{{ free_item[i].manufacturer_part_no }}</td>
         </tr>
 {% } %}
     </tbody>
@@ -51,6 +80,8 @@
             <td align="pull-right"><b>Sr. No</b></td>
             <td align="pull-right"><b>Select</b></td>
             <td align="pull-left"><b>Item Code</b></td>
+            <td align="pull-left"><b>Item Name</b></td>
+            <td align="pull-left"><b>Manufacturer Product Code</b></td>
         </tr>
     </thead>
     <tbody>
@@ -61,6 +92,8 @@
                 <input type="checkbox" class="select" id="_select" value={{free_item[i].item_code}} name={{free_item[i].item_code}}>
                 </td>
             <td>{{ free_item[i].item_code }}</td>
+            <td>{{ free_item[i].item_name }}  </td>
+            <td>{{ free_item[i].manufacturer_part_no }}</td>
         </tr>
 {% } %}
     </tbody>

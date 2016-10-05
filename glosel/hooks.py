@@ -85,6 +85,14 @@ doc_events = {
 		# "on_update": ["glosel.scheme_management.dn_update"]
 		# "on_trash": "method"
 	},
+	"Purchase Order": {
+		# "on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add","glosel.scheme_management.dn_return_submit"],
+		# "on_cancel":"glosel.scheme_management.dn_on_cancel",
+		"before_submit":"glosel.scheme_management.po_before_submit",
+		# "before_submit":"glosel.scheme_management.dn_before_submit"
+		# "validate": "glosel.scheme_management.po_before_submit_create_so"
+		# "on_trash": "method"
+	},
 	"Leave Application": {
 		"on_submit": "glosel.custom_py_methods.leaveapplication_submit",
 		# "on_cancel": "method",

@@ -156,7 +156,21 @@ def dn_on_cancel(doc,method):
 
 
 def dn_validate(doc,method):
-	frappe.msgprint("In dn validate")
+	# doc.total_price = 99
+	total = 0
+	total_free_qty = 0
+	for raw in doc.get("items"):
+# frappe.db.get_value("Company",doc.company,"default_expense_account")
+		if raw.free_item_of_scheme:
+			price_list_rate = frappe.db.get_value("Item Price",{"item_code": raw.item_code, "price_list": doc.selling_price_list}, "price_list_rate")
+			total_free_qty = total_free_qty + raw.qty
+			total = total+(price_list_rate*raw.qty)
+	doc.total_price = total
+	doc.total_qty_of_free_item = total_free_qty
+
+	# frappe.msgprint("Total Price for free item is updated")
+	# pass
+	# frappe.msgprint("In dn validate")
 	# add_free_item(doc,method)
 
 	# doc.schemes=[]
@@ -354,42 +368,82 @@ def get_schemes(doc):
 	# dl = frappe.db.sql("""select name,title,apply_on, valid_from, valid_upto,scheme_type from `tabScheme Management` where active=1 and valid_upto > now();""",as_dict=1, debug=1)
 	# frappe.msgprint(dl)
 	return dl
-	# doc_json = json.loads(doc)
-	# frappe.msgprint(doc_json["name"])
-	# doc_dn = frappe.get_doc("Delivery Note", doc_json["name"])
-	# doc_dn.set('schemes', [])
-	# for d in dl:
-	# 	nl = doc_dn.append('schemes', {})
-	# 	nl.apply_on = d.apply_on
-	# 	nl.scheme_name = d.name
-	# 	frappe.msgprint(d.apply_on)
-	# doc_dn.terms="asv"
-	# doc_dn.save()
-
-
-	# dl = frappe.db.sql("""select name,customer,date_of_receipt, date_of_collection,job_card,functional_location,functional_location_code,
-	# 			equipment,equipment_make,serial_number,equipment_code,
-	# 			conservation_protection_system, sample_taken_from, oil_temperature, winding_temperature,
-	# 			remarks from `tabSample Entry Register` where docstatus = 0 and order_id='%s' %s"""%(self.order, condition),as_dict=1, debug=1)
-
-	# 		self.set('sample_entry_creation_tool_details', [])
-
-	# 		for d in dl:
-	# 			nl = self.append('sample_entry_creation_tool_details', {})
-	# 			nl.sample_id = d.name
-	# 			nl.customer = d.customer
-	# 			nl.job_card = d.job_card
-	# 			nl.functional_location=d.functional_location
-	# 			nl.functional_location_code = d.functional_location_code
 
 def dn_before_submit(doc,method):
-	# create_customerwise_item_on_dn_submit(doc,method)
 	add_free_item(doc,method)
 
+def po_before_submit(doc,method):
+	if doc.is_claim:
+		add_free_item_in_po(doc,method)
+		add_free_item_in_so_from_po
+
+
+# def po_before_submit_create_so(doc,method):
+# 	# create_customerwise_item_on_dn_submit(doc,method)
+# 	add_free_item_in_so_from_po(doc,method)
+
+def add_free_item_in_so_from_po(doc,method):
+	frappe.msgprint("in add add_free_item_in_po")
+	so_doc = frappe.new_doc("Sales Order")
+	so_doc.customer = doc.company
+	so_doc.delivery_date = frappe.utils.get_datetime()
+	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
+	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
+	default_company=frappe.defaults.get_defaults().get("company")
+
+	for raw in doc.get("items"):
+		item = frappo_before_submitpe.get_doc("Item",raw.item_code)
+		nl = so_doc.append('items', {})
+		nl.item_code = raw.item_code
+		nl.item_name = item.item_name
+		nl.description = item.description
+		nl.stock_uom = item.stock_uom
+		nl.warehouse = item.default_warehouse
+		nl.expense_account = default_expense_account
+		nl.cost_center = cost_center
+		nl.qty=raw.qty
+		nl.rate=0
+		nl.amount=0
+		nl.price_list_rate=0
+
+	so_doc.save()
+
+def add_free_item_in_po(doc,method):
+	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
+	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
+	for raw in doc.get("claim_available"):
+		item = frappe.get_doc("Item",raw.item_code)
+		nl = doc.append('items', {})
+		dn_item = frappe.get_doc("Delivery Note Item",raw.delivery_note_item)
+		claim_for_qty = raw.qty*(dn_item.claim_for_qty/dn_item.qty)
+		updated_claimed_qty_by_distributor = dn_item.claimed_qty_by_distributor+claim_for_qty 
+		print "\nupdated_claimed_qty_by_distributor",updated_claimed_qty_by_distributor
+		print "\ndn_item.claimed_qty_by_distributor",dn_item.claimed_qty_by_distributor
+		if updated_claimed_qty_by_distributor < dn_item.claimed_qty_by_distributor:
+			frappe.throw("You have allready claimed for this scheme and customer")
+		
+		nl.claim_for_qty = claim_for_qty
+		frappe.db.set_value("Delivery Note Item", raw.delivery_note_item, "claimed_qty_by_distributor",updated_claimed_qty_by_distributor)
+		nl.item_code = raw.item_code
+		nl.item_name = item.item_name
+		nl.description = item.description
+		nl.stock_uom = item.stock_uom
+		nl.warehouse = item.default_warehouse
+		nl.expense_account = default_expense_account
+		nl.cost_center = cost_center
+		nl.delivery_note = raw.delivery_note
+		nl.delivery_note_item = raw.delivery_note_item
+		nl.scheme_name = raw.scheme_name
+		nl.schedule_date = frappe.utils.get_datetime()
+		nl.conversion_factor = 1
+		nl.qty = raw.qty
+		nl.rate = 0
+		nl.base_rate = 0
+		nl.amount = 0
+		nl.base_amount = 0
+
 def add_free_item(doc,method):
-	# print "\n\n\n***********************dn_before_submit"
 	dn_items = []
-	# doc.set('items', [])
 	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
 	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
 	frappe.msgprint(cmp)
@@ -404,7 +458,6 @@ def add_free_item(doc,method):
 		nl.warehouse = item.default_warehouse
 		nl.expense_account = default_expense_account
 		nl.cost_center = cost_center
-		# frappe.msgprint(raw.item_code)
 		nl.qty = raw.qty
 		nl.free_item_of_scheme = raw.scheme_name
 		scheme = frappe.get_doc("Scheme Management",raw.scheme_name)
@@ -412,7 +465,7 @@ def add_free_item(doc,method):
 		#add claim for price
 		# print scheme.amount/
 		print "claim_for_qty",raw.qty*scheme.quantity
-	frappe.msgprint("dn_before_submit")
+	# frappe.msgprint("dn_before_submit")
 
 
 def create_customerwise_item_on_dn_submit(doc,method):
@@ -436,112 +489,85 @@ def create_customerwise_item_on_dn_submit(doc,method):
 
 @frappe.whitelist()
 def get_free_item_by_brand(doc,apply_on,scheme_name):
+	# frappe.msgprint("hi")
+	print "\n\n\nhiiiiiiiiiii"
 	if apply_on=="Brand":
 		dl = frappe.db.sql("""select brand from `tabScheme Management Item` where parent='{0}' and apply_on='Brand' and brand IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+		dl_item_price = frappe.db.sql("""select sum(price) as total_price from `tabScheme Management Item` where parent='{0}' and apply_on='Brand' and brand IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+		print "dl_item_price",dl_item_price
+
 		brand_list = ""
 		for k in dl:
 			brand_list=brand_list+"'"+k['brand']+"'"+","
 			# print k['brand']
 		brand_list = brand_list[:-1]
-		dl_item = frappe.db.sql(""" select item_code from `tabItem` where brand in ({0})""".format(brand_list),as_dict=1, debug=1)
+		dl_item = frappe.db.sql("""select item_code,item_name,manufacturer_part_no from `tabItem` where brand in ({0})""".format(brand_list),as_dict=1, debug=1)
 		# print "dl_item",dl_item
+		dl_item.append(dl_item_price[0])
 		return dl_item
 	if apply_on=="Item Code":
-		dl = frappe.db.sql("""select item_code from `tabScheme Management Item` where parent='{0}' and apply_on='Item Code' and item_code IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+		dl = frappe.db.sql("""select smi.item_code,i.item_code,i.manufacturer_part_no from `tabScheme Management Item` as smi, tabItem as i 
+			where smi.parent='{0}' and smi.apply_on='Item Code' and smi.item_code=i.item_code and smi.item_code IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+
 		# print "\n",dl
+		doc = json.loads(doc)
+		customer = doc['customer']
+		print "hi"
+		effective_qty_per_item = []
+		for i in dl:
+			print i["item_code"]
+			dli = frappe.db.sql("""select sum(effective_qty) as effective_qty from `tabCustomerwise Item` where 
+				 customer = '{2}' group by item_code having item_code = '{1}'""".format(scheme_name,i["item_code"],customer),as_dict=1, debug=1)
+			effective_qty_per_item.append(dli[0])
+		
+		# (29-22%3)/3
+		scm_doc=frappe.get_doc("Scheme Management",scheme_name)
+		for i in range(len(dl)):
+			free_qty= frappe.db.sql("""select quantity from `tabScheme Management Item` where parent='{0}' and item_code='{1}'""".format(scheme_name,dl[i]['item_code']),as_dict=1,debug=1)
+			print "ed",effective_qty_per_item[i]['effective_qty'],"b",scm_doc.quantity,"c",free_qty[0]['quantity']
+			if scm_doc.quantity>0:
+				a=effective_qty_per_item[i]['effective_qty']/(float(scm_doc.quantity)/free_qty[0]['quantity'])
+				effective_qty_per_item[i]['effective_qty'] = a
+			else:
+				effective_qty_per_item[i]['effective_qty'] = 0
+		for i in range(len(dl)):
+		     dl[i]['effective_qty'] = effective_qty_per_item[i]['effective_qty']
+
+		print "updated",dli
 		return dl
+		#{"dict1":asdas,"dict":asdas}
 
 	if apply_on=="Item Group":
-		dl = frappe.db.sql("""select item_group from `tabScheme Management Item` where parent='{0}' and apply_on='Item Group' and item_group IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+		print "scheme for group"
+		dl = frappe.db.sql("""select item_group,price from `tabScheme Management Item` where parent='{0}' and apply_on='Item Group' and item_group IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+		dl_item_price = frappe.db.sql("""select sum(price) as total_price from `tabScheme Management Item` where parent='{0}' and apply_on='Item Group' and item_group IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+
+		print dl_item_price
 		item_group_list = ""
 		for k in dl:
 			item_group_list=item_group_list+"'"+k['item_group']+"'"+","
 			# print k['item_group']
 		item_group_list = item_group_list[:-1]
 		# print "item_group_list",item_group_list
-		dl_item = frappe.db.sql("""select item_code from `tabItem` where item_group in ({0})""".format(item_group_list),as_dict=1, debug=1)
-		# print "dl_item*****************************",dl_item
+		dl_item = frappe.db.sql("""select item_code, item_name,manufacturer_part_no from `tabItem` where item_group in ({0})""".format(item_group_list),as_dict=1, debug=1)
+		print "dl_item*****************************",dl_item
+		dl_item.append(dl_item_price[0])
+		print "dl_item*****************************",dl_item
 		return dl_item
 
-		
+@frappe.whitelist()
+def get_claim_details(doc):
+	frappe.msgprint("claim details")
+	dl = frappe.db.sql("""select dni.name as dni, dn.name as delivery_note, dn.customer,dni.item_code,dni.qty,dni.claim_for_qty,dni.free_item_of_scheme as scheme_name,
+		 sm.apply_on,sm.scheme_type from `tabDelivery Note Item` as dni, `tabDelivery Note` dn, `tabScheme Management` sm where dn.name=dni.parent 
+		 and dni.free_item_of_scheme=sm.name and dni.claim_for_qty!=0 and dni.claimed_qty_by_distributor<dni.claim_for_qty""",as_dict=1, debug=1)
+	print "\n\ndl_for_claim",dl
 
+	# po_items = []
+	for raw in dl:
+		print "\n\n\nrassw",raw.item_code
 
+	return dl
+		# dn_items.append(raw["item_code"])
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-					
-
-
-
-
-
-
-
-
-
-
-						
-
-						
-
-
-
-
-
-			
-
-		
-
-
-
-
-
-
-			
-
-
-
-
-
-
-
-		
-
-
-
-
-
-
-
-
-
-
-
-
-		
