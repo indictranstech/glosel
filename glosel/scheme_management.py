@@ -83,13 +83,13 @@ def dn_submit(doc,method):
 						# scheme_list.append(scheme_name)
 						# frappe.errprint(scheme_name)
 				scheme_obj=frappe.get_doc("Scheme Management",scheme_name)
-				if scheme_obj.apply_on=="Item Group" and scheme_on=="Quantity":
+				if scheme_obj.apply_on=="Item Group" and scheme_obj.scheme_on=="Quantity":
 					quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and item_group=%s""",(doc.customer,scheme_obj.item_group))
 
-				elif scheme_obj.apply_on=="Item Code" and scheme_on=="Quantity":
+				elif scheme_obj.apply_on=="Item Code" and scheme_obj.scheme_on=="Quantity":
 					# main_object_name=scheme_obj.item_code
 					quantity=quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and item_code=%s""",(doc.customer,scheme_obj.item_code))
-				elif scheme_obj.apply_on=="Brand" and scheme_on=="Quantity": 
+				elif scheme_obj.apply_on=="Brand" and scheme_obj.scheme_on=="Quantity": 
 					# main_object_name=scheme_obj.brand
 					quantity=quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and brand=%s""",(doc.customer,scheme_obj.brand))
 				if quantity>=scheme_obj.minimum_quantity and quantity>=scheme_obj.quantity:
@@ -358,6 +358,7 @@ def get_schemes(doc):
 	print "available_scheme_list",available_scheme_list
 	id_list = tuple([x.encode('UTF8') for x in available_scheme_list if x])	
 	#remove , at the end
+	cond = ""
 	if len(id_list) == 1:
 		cond ="where title = '{0}' ".format(id_list[0]) 
 	elif len(id_list) > 1:	
@@ -375,7 +376,7 @@ def dn_before_submit(doc,method):
 def po_before_submit(doc,method):
 	if doc.is_claim:
 		add_free_item_in_po(doc,method)
-		add_free_item_in_so_from_po
+		add_free_item_in_so_from_po(doc,method)
 
 
 # def po_before_submit_create_so(doc,method):
@@ -392,7 +393,7 @@ def add_free_item_in_so_from_po(doc,method):
 	default_company=frappe.defaults.get_defaults().get("company")
 
 	for raw in doc.get("items"):
-		item = frappo_before_submitpe.get_doc("Item",raw.item_code)
+		item = frappe.get_doc("Item",raw.item_code)
 		nl = so_doc.append('items', {})
 		nl.item_code = raw.item_code
 		nl.item_name = item.item_name
@@ -487,6 +488,13 @@ def create_customerwise_item_on_dn_submit(doc,method):
 			if raw.free_item_of_scheme:
 				pass
 
+def change_item_in_po(doc,scheme_name):
+	frappe.msgprint("hi")
+	apply_on=frappe.db.get_value("Scheme Management",{"name":scheme_name},"apply_on")
+
+	print "\n\n\nhiiiiiiiiiii"
+	print apply_on
+
 @frappe.whitelist()
 def get_free_item_by_brand(doc,apply_on,scheme_name):
 	# frappe.msgprint("hi")
@@ -533,7 +541,7 @@ def get_free_item_by_brand(doc,apply_on,scheme_name):
 		for i in range(len(dl)):
 		     dl[i]['effective_qty'] = effective_qty_per_item[i]['effective_qty']
 
-		print "updated",dli
+		# print "updated",dli
 		return dl
 		#{"dict1":asdas,"dict":asdas}
 
