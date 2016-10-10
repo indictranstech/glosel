@@ -76,24 +76,24 @@ def dn_submit(doc,method):
 	 		 order by CAST(priority as UNSIGNED) desc""",(doc.posting_date,doc.posting_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group),as_dict=1)
 				# gives all the schemes applicable on current  item,brand and item group irrespective of amount and quantity
 				scheme_list=[]
-
 				for i in scheme_title:
 					if i :
+						scheme_name = ""
 						scheme_name=i.get("title")
 						# scheme_list.append(scheme_name)
 						# frappe.errprint(scheme_name)
-				scheme_obj=frappe.get_doc("Scheme Management",scheme_name)
-				if scheme_obj.apply_on=="Item Group" and scheme_obj.scheme_on=="Quantity":
-					quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and item_group=%s""",(doc.customer,scheme_obj.item_group))
+						scheme_obj=frappe.get_doc("Scheme Management",scheme_name)
+						if scheme_obj.apply_on=="Item Group" and scheme_obj.scheme_on=="Quantity":
+							quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and item_group=%s""",(doc.customer,scheme_obj.item_group))
 
-				elif scheme_obj.apply_on=="Item Code" and scheme_obj.scheme_on=="Quantity":
-					# main_object_name=scheme_obj.item_code
-					quantity=quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and item_code=%s""",(doc.customer,scheme_obj.item_code))
-				elif scheme_obj.apply_on=="Brand" and scheme_obj.scheme_on=="Quantity": 
-					# main_object_name=scheme_obj.brand
-					quantity=quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and brand=%s""",(doc.customer,scheme_obj.brand))
-				if quantity>=scheme_obj.minimum_quantity and quantity>=scheme_obj.quantity:
-					scheme_list.append(scheme_name)
+						elif scheme_obj.apply_on=="Item Code" and scheme_obj.scheme_on=="Quantity":
+							# main_object_name=scheme_obj.item_code
+							quantity=quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and item_code=%s""",(doc.customer,scheme_obj.item_code))
+						elif scheme_obj.apply_on=="Brand" and scheme_obj.scheme_on=="Quantity": 
+							# main_object_name=scheme_obj.brand
+							quantity=quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and brand=%s""",(doc.customer,scheme_obj.brand))
+						if quantity>=scheme_obj.minimum_quantity and quantity>=scheme_obj.quantity:
+							scheme_list.append(scheme_name)
 
 				# main_object_criteria=scheme_obj.apply_on
 				# for scheme_raw in scheme_obj.get("freebie_items"):
@@ -177,7 +177,7 @@ def dn_validate(doc,method):
 	# create_customerwise_item_on_dn_submit(doc,method)
 	# pass
 
-	# dl = frappe.db.sql("""select name,title,apply_on, valid_from, valid_upto,scheme_type from `tabScheme Management` where active=1 and valid_upto > now();""",as_dict=1, debug=1)
+	# dl = frappe.db.sql("""selectget_schemes name,title,apply_on, valid_from, valid_upto,scheme_type from `tabScheme Management` where active=1 and valid_upto > now();""",as_dict=1, debug=1)
 
 	# # for i in range(len(doc.items)):
 	# # 	pass
@@ -413,8 +413,12 @@ def add_free_item_in_po(doc,method):
 	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
 	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
 	for raw in doc.get("claim_available"):
-		item = frappe.get_doc("Item",raw.item_code)
+		if raw.selected_item:
+			item = frappe.get_doc("Item",raw.selected_item)
+		elif raw.item_code:
+			item = frappe.get_doc("Item",raw.item_code)
 		nl = doc.append('items', {})
+
 		dn_item = frappe.get_doc("Delivery Note Item",raw.delivery_note_item)
 		claim_for_qty = raw.qty*(dn_item.claim_for_qty/dn_item.qty)
 		updated_claimed_qty_by_distributor = dn_item.claimed_qty_by_distributor+claim_for_qty 
@@ -488,12 +492,46 @@ def create_customerwise_item_on_dn_submit(doc,method):
 			if raw.free_item_of_scheme:
 				pass
 
+@frappe.whitelist()
 def change_item_in_po(doc,scheme_name):
-	frappe.msgprint("hi")
+	# frappe.msgprint("hi")
 	apply_on=frappe.db.get_value("Scheme Management",{"name":scheme_name},"apply_on")
 
 	print "\n\n\nhiiiiiiiiiii"
 	print apply_on
+	if apply_on=="Brand":
+		dl = frappe.db.sql("""select brand from `tabScheme Management Item` where parent='{0}' and apply_on='Brand' and brand IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+		# dl_item_price = frappe.db.sql("""select sum(price) as total_price from `tabScheme Management Item` where parent='{0}' and apply_on='Brand' and brand IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+		# print "dl_item_price",dl_item_price
+
+		brand_list = ""
+		for k in dl:
+			brand_list=brand_list+"'"+k['brand']+"'"+","
+			# print k['brand']
+		brand_list = brand_list[:-1]
+		dl_item = frappe.db.sql("""select item_code,item_name,manufacturer_part_no from `tabItem` where brand in ({0})""".format(brand_list),as_dict=1, debug=1)
+		# print "dl_item",dl_item
+		# dl_item.append(dl_item_price[0])
+		print dl_item
+		return dl_item
+
+	if apply_on=="Item Group":
+		print "scheme for group"
+		dl = frappe.db.sql("""select item_group,price from `tabScheme Management Item` where parent='{0}' and apply_on='Item Group' and item_group IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+		# dl_item_price = frappe.db.sql("""select sum(price) as total_price from `tabScheme Management Item` where parent='{0}' and apply_on='Item Group' and item_group IS NOT NULL""".format(scheme_name),as_dict=1, debug=1)
+
+		# print dl_item_price
+		item_group_list = ""
+		for k in dl:
+			item_group_list=item_group_list+"'"+k['item_group']+"'"+","
+			# print k['item_group']
+		item_group_list = item_group_list[:-1]
+		# print "item_group_list",item_group_list
+		dl_item = frappe.db.sql("""select item_code, item_name,manufacturer_part_no from `tabItem` where item_group in ({0})""".format(item_group_list),as_dict=1, debug=1)
+		print "dl_item*****************************",dl_item
+		# dl_item.append(dl_item_price[0])
+		print "dl_item*****************************",dl_item
+		return dl_item
 
 @frappe.whitelist()
 def get_free_item_by_brand(doc,apply_on,scheme_name):
