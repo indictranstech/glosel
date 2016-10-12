@@ -156,6 +156,7 @@ def dn_on_cancel(doc,method):
 
 
 def dn_validate(doc,method):
+	add_free_item(doc,method)
 	# doc.total_price = 99
 	total = 0
 	total_free_qty = 0
@@ -279,82 +280,90 @@ def get_schemes(doc):
 
 	available_scheme_list = []
 
-	for raw in doc.get("items"):
-		scheme_title= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and item_code=%s""",(raw["item_code"]),as_dict=1)
-		item_obj = frappe.get_doc("Item",raw["item_code"])
-		# scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and item_group=%s""",(item_obj.item_group),as_dict=1)
-		scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and apply_on='Item Group'""",as_dict=1)
+# for raw in doc.get("items"):
+	print "\n\customer_group",doc.get("customer_group")
+	if doc.get("customer_group") == "Distributer":
+		company = doc.get("company")
+		print "Distributer Scheme"
+		scheme_title= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and item_code=%s and scheme_depends_upon='Company' and company=%s""",(raw["item_code"],company),as_dict=1)
+	else:
+		print "non distributor"
+		scheme_title= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and item_code=%s and scheme_depends_upon='ALL'""",(raw["item_code"]),as_dict=1)
+	# item_obj = frappe.get_doc("Item",raw["item_code"])
+	# scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and item_group=%s""",(item_obj.item_group),as_dict=1)
+	scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and apply_on='Item Group'""",as_dict=1)
 
-		# print "scheme_title",scheme_title
-		# frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) 
-		#  		 order by CAST(priority as UNSIGNED) desc""",(doc.posting_date,doc.posting_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group),as_dict=1)
-		# gives all the schemes applicable on current  item,brand and item group irrespective of amount and quantity
-		scheme_list=[]
-		scheme_list_for_group=[]
-		for i in scheme_title_group:
-			scheme_list_for_group.append(i["title"])
-		for i in scheme_title:
-			scheme_list.append(i["title"])
-		# print "\n\nscheme_listttttt",scheme_list
+	print "scheme_title",scheme_title
+	# frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) 
+	#  		 order by CAST(priority as UNSIGNED) desc""",(doc.posting_date,doc.posting_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group),as_dict=1)
+	# gives all the schemes applicable on current  item,brand and item group irrespective of amount and quantity
+	scheme_list=[]
+	scheme_list_for_group=[]
+	for i in scheme_title_group:
+		scheme_list_for_group.append(i["title"])
+	for i in scheme_title:
+		scheme_list.append(i["title"])
+	# print "\n\nscheme_listttttt",scheme_list
 
-		# print "\n\schemelist for Item Group",scheme_list
+	# print "\n\schemelist for Item Group",scheme_list
 
-		for i in scheme_list:
-			if i:
-				scheme_obj = frappe.get_doc("Scheme Management",i)
-				# print "\napply",scheme_obj.apply_on
-				# print "\n item code in dn",raw["item_code"]
+	for i in scheme_list:
+		if i:
+			scheme_obj = frappe.get_doc("Scheme Management",i)
+			# print "\napply",scheme_obj.apply_on
+			# print "\n item code in dn",raw["item_code"]
 
+
+		if scheme_obj.apply_on=="Item Code" and scheme_obj.scheme_on=="Quantity":
+			# main_object_name=scheme_obj.item_code
+			effective_qty=frappe.db.sql("""select sum(effective_qty) as effective_qty from `tabCustomerwise Item` 
+				where customer=%s and item_code=%s""",(dn_customer,raw["item_code"]),as_dict=1)
+			print "effective_qty",effective_qty[0]["effective_qty"]
+			effective_qty_check = effective_qty[0]["effective_qty"]
+
+			# for i in scheme_list:
+			scheme_obj = frappe.get_doc("Scheme Management",i)
+			#if scheme on qty
+			if scheme_obj.scheme_on=="Quantity":
+				if effective_qty_check>=float(scheme_obj.minimum_quantity) and effective_qty_check>=float(scheme_obj.quantity):
+					print "in add schm"
+					available_scheme_list.append(scheme_obj.title)
+				# elif scheme_obj.scheme_on=="Price":
+				# 	#check for price validations like on 50k give 5k free
+				# 	pass
+
+			# print "\nScheme Available list initial",available_scheme_list
+
+		#Check Item Price Validation
+		if scheme_obj.apply_on=="Item Code" and scheme_obj.scheme_on=="Price":
+			effective_amount_check=frappe.db.sql("""select sum(effective_amount) as effective_amount from `tabCustomerwise Item` 
+				where customer=%s and item_code=%s""",(dn_customer,raw["item_code"]),as_dict=1)
+			# print "\neffective_amount",effective_amount_check
+			if effective_amount_check>=scheme_obj.amount:
+					available_scheme_list.append(scheme_obj.title)
 	
-			if scheme_obj.apply_on=="Item Code" and scheme_obj.scheme_on=="Quantity":
-				# main_object_name=scheme_obj.item_code
-				effective_qty=frappe.db.sql("""select sum(effective_qty) as effective_qty from `tabCustomerwise Item` 
-					where customer=%s and item_code=%s""",(dn_customer,raw["item_code"]),as_dict=1)
-				# print "effective_qty",effective_qty[0]["effective_qty"]
-				effective_qty_check = effective_qty[0]["effective_qty"]
+	# print "scheme_list_for_group--------",scheme_list_for_group
+	for i in scheme_list_for_group:
+		if i:
+			scheme_obj = frappe.get_doc("Scheme Management",i)
 
-				# for i in scheme_list:
-				scheme_obj = frappe.get_doc("Scheme Management",i)
-				#if scheme on qty
-				if scheme_obj.scheme_on=="Quantity":
-					if effective_qty_check>=scheme_obj.minimum_quantity and effective_qty_check>=scheme_obj.quantity:
-						available_scheme_list.append(scheme_obj.title)
-					# elif scheme_obj.scheme_on=="Price":
-					# 	#check for price validations like on 50k give 5k free
-					# 	pass
-
-				# print "\nScheme Available list initial",available_scheme_list
-
-			#Check Item Price Validation
-			if scheme_obj.apply_on=="Item Code" and scheme_obj.scheme_on=="Price":
-				effective_amount_check=frappe.db.sql("""select sum(effective_amount) as effective_amount from `tabCustomerwise Item` 
-					where customer=%s and item_code=%s""",(dn_customer,raw["item_code"]),as_dict=1)
-				# print "\neffective_amount",effective_amount_check
-				if effective_amount_check>=scheme_obj.amount:
+		#need to check item group
+		if scheme_obj.apply_on=="Item Group" and scheme_obj.scheme_on=="Quantity":
+			effective_qty_check=frappe.db.sql("""select sum(effective_qty) as effective_qty from 
+				`tabCustomerwise Item`  where customer=%s  group by item_group having item_group=%s""",(dn_customer,scheme_obj.item_group),as_dict=1,debug=1)
+			if effective_qty_check:
+				effective_qty_check = effective_qty_check[0]["effective_qty"]
+				if effective_qty_check>=scheme_obj.minimum_quantity and effective_qty_check>=scheme_obj.quantity:
 						available_scheme_list.append(scheme_obj.title)
 		
-		# print "scheme_list_for_group--------",scheme_list_for_group
-		for i in scheme_list_for_group:
-			if i:
-				scheme_obj = frappe.get_doc("Scheme Management",i)
+		if scheme_obj.apply_on=="Item Group" and scheme_obj.scheme_on=="Price":
+			effective_amount_check=frappe.db.sql("""select sum(effective_amount) as effective_amount from 
+				`tabCustomerwise Item`  where customer=%s  group by item_group having item_group=%s""",(dn_customer,scheme_obj.item_group),as_dict=1,debug=1)
+			if effective_amount_check:
+				effective_amount_check = effective_amount_check[0]["effective_amount"]
+				if effective_amount_check>=scheme_obj.amount:
+						available_scheme_list.append(scheme_obj.title)
 
-			#need to check item group
-			if scheme_obj.apply_on=="Item Group" and scheme_obj.scheme_on=="Quantity":
-				effective_qty_check=frappe.db.sql("""select sum(effective_qty) as effective_qty from 
-					`tabCustomerwise Item`  where customer=%s  group by item_group having item_group=%s""",(dn_customer,scheme_obj.item_group),as_dict=1,debug=1)
-				if effective_qty_check:
-					effective_qty_check = effective_qty_check[0]["effective_qty"]
-					if effective_qty_check>=scheme_obj.minimum_quantity and effective_qty_check>=scheme_obj.quantity:
-							available_scheme_list.append(scheme_obj.title)
-			
-			if scheme_obj.apply_on=="Item Group" and scheme_obj.scheme_on=="Price":
-				effective_amount_check=frappe.db.sql("""select sum(effective_amount) as effective_amount from 
-					`tabCustomerwise Item`  where customer=%s  group by item_group having item_group=%s""",(dn_customer,scheme_obj.item_group),as_dict=1,debug=1)
-				if effective_amount_check:
-					effective_amount_check = effective_amount_check[0]["effective_amount"]
-					if effective_amount_check>=scheme_obj.amount:
-							available_scheme_list.append(scheme_obj.title)
-	
 	print "available_scheme_list",available_scheme_list
 	id_list = tuple([x.encode('UTF8') for x in available_scheme_list if x])	
 	#remove , at the end
@@ -362,9 +371,12 @@ def get_schemes(doc):
 	if len(id_list) == 1:
 		cond ="where title = '{0}' ".format(id_list[0]) 
 	elif len(id_list) > 1:	
-		cond = "where title in {0} ".format(id_list) 
+		cond = "where title in {0} ".format(id_list)
+	elif len(id_list)==0:
+		cond ="where title = '{0}' ".format("Dummy") 
 
 	dl = frappe.db.sql("""select name,title,apply_on, valid_from, valid_upto,scheme_type from `tabScheme Management` {0}""".format(cond),as_dict=1, debug=1)
+	print "title",cond
 	print "\n\ndl",dl
 	# dl = frappe.db.sql("""select name,title,apply_on, valid_from, valid_upto,scheme_type from `tabScheme Management` where active=1 and valid_upto > now();""",as_dict=1, debug=1)
 	# frappe.msgprint(dl)
@@ -448,10 +460,11 @@ def add_free_item_in_po(doc,method):
 		nl.base_amount = 0
 
 def add_free_item(doc,method):
+	#add item in DN
 	dn_items = []
 	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
 	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
-	frappe.msgprint(cmp)
+	frappe.msgprint("in add_free_item")
 	for raw in doc.get("schemes_selected"):
 		item = frappe.get_doc("Item",raw.item_code)
 		dn_items.append(raw.item_code)
@@ -467,6 +480,46 @@ def add_free_item(doc,method):
 		nl.free_item_of_scheme = raw.scheme_name
 		scheme = frappe.get_doc("Scheme Management",raw.scheme_name)
 		nl.claim_for_qty = raw.qty*scheme.quantity
+
+		#update claim details in CWI
+		cwi = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer")},["qty","name"],as_dict=1)
+		
+		# print "\nccwi",cwi
+		print "raw.qty",raw.qty
+		# frappe.throw("Over Claim for item {0}".format(raw.item_code))
+
+		qty_calculation = raw.qty
+		for i in cwi:
+			print "cwi",i
+			if qty_calculation >0:	
+				scm_doc = frappe.get_doc("Customerwise Item",i.name)
+				print "in qty_calculation",qty_calculation
+				if qty_calculation <= scm_doc.effective_qty:
+					print "first"
+					a = scm_doc.effective_qty
+					scm_doc.effective_qty = scm_doc.effective_qty - a
+					scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+					print "ef qty",scm_doc.effective_qty
+					print "qty_calculation",qty_calculation
+					scm_doc.save()
+				if qty_calculation > scm_doc.effective_qty:
+					a = float(scm_doc.effective_qty)
+					scm_doc = frappe.get_doc("Customerwise Item",i.name)
+					print scm_doc.effective_qty
+					print "for qty",scm_doc.qty
+					print "scm_doc.effective_qty",float(scm_doc.effective_qty)
+					print "a",a
+					scm_doc.effective_qty = scm_doc.effective_qty - a
+					scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+					print "Value of a",a					
+					scm_doc.save()
+					qty_calculation = qty_calculation - a
+					print " qty cal",qty_calculation					
+					# break
+		if qty_calculation>0:
+			print "qty_calculationqty_calculation",qty_calculation
+			frappe.throw("Over Claim for item {0}".format(raw.item_code))
+				# break
 		#add claim for price
 		# print scheme.amount/
 		print "claim_for_qty",raw.qty*scheme.quantity
@@ -488,6 +541,7 @@ def create_customerwise_item_on_dn_submit(doc,method):
 				cwi.effective_amount=raw.amount
 				cwi.date=doc.posting_date
 				cwi.delivery_note=doc.name
+				cwi.company = doc.company
 				cwi.save()
 			if raw.free_item_of_scheme:
 				pass
@@ -604,9 +658,11 @@ def get_free_item_by_brand(doc,apply_on,scheme_name):
 @frappe.whitelist()
 def get_claim_details(doc):
 	frappe.msgprint("claim details")
+	doc = json.loads(doc)
+	print "\n\n\ncompany",doc["name"]
 	dl = frappe.db.sql("""select dni.name as dni, dn.name as delivery_note, dn.customer,dni.item_code,dni.qty,dni.claim_for_qty,dni.free_item_of_scheme as scheme_name,
 		 sm.apply_on,sm.scheme_type from `tabDelivery Note Item` as dni, `tabDelivery Note` dn, `tabScheme Management` sm where dn.name=dni.parent 
-		 and dni.free_item_of_scheme=sm.name and dni.claim_for_qty!=0 and dni.claimed_qty_by_distributor<dni.claim_for_qty""",as_dict=1, debug=1)
+		 and dni.free_item_of_scheme=sm.name and dni.claim_for_qty!=0 and dni.claimed_qty_by_distributor<dni.claim_for_qty and dn.company='{0}'""".format(doc["company"]),as_dict=1, debug=1)
 	print "\n\ndl_for_claim",dl
 
 	# po_items = []
@@ -615,5 +671,3 @@ def get_claim_details(doc):
 
 	return dl
 		# dn_items.append(raw["item_code"])
-
-
