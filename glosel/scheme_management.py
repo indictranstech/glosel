@@ -158,17 +158,17 @@ def dn_on_cancel(doc,method):
 def dn_validate(doc,method):
 	add_free_item(doc,method)
 	# doc.total_price = 99
-	total = 0
-	total_free_qty = 0
-	for raw in doc.get("items"):
-# frappe.db.get_value("Company",doc.company,"default_expense_account")
-		if raw.free_item_of_scheme:
-			price_list_rate = frappe.db.get_value("Item Price",{"item_code": raw.item_code, "price_list": doc.selling_price_list}, "price_list_rate")
-			if raw.qty:
-				total_free_qty = total_free_qty + raw.qty
-				total = total+(price_list_rate*raw.qty)
-	doc.total_price = total
-	doc.total_qty_of_free_item = total_free_qty
+# 	total = 0
+# 	total_free_qty = 0
+# 	for raw in doc.get("items"):
+# # frappe.db.get_value("Company",doc.company,"default_expense_account")
+# 		if raw.free_item_of_scheme:
+# 			price_list_rate = frappe.db.get_value("Item Price",{"item_code": raw.item_code, "price_list": doc.selling_price_list}, "price_list_rate")
+# 			if raw.qty:
+# 				total_free_qty = total_free_qty + raw.qty
+# 				total = total+(price_list_rate*raw.qty)
+# 	doc.total_price = total
+# 	doc.total_qty_of_free_item = total_free_qty
 
 	# frappe.msgprint("Total Price for free item is updated")
 	# pass
@@ -500,11 +500,11 @@ def add_free_item(doc,method):
 		#update claim details in CWI
 		# print "\nccwi",cwi
 		# frappe.throw("Over Claim for item {0}".format(raw.item_code))
-		print "raw.qty",raw.qty
+		# print "raw.qty",raw.qty
 		cwi = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer")},["qty","name"],as_dict=1)
 		if raw.scheme_name:
 			scheme_doc = frappe.get_doc("Scheme Management",raw.scheme_name)
-			frappe.msgprint(raw.scheme_name)
+			# frappe.msgprint(raw.scheme_name)
 			qty_calculation = raw.qty
 			if scheme_doc.scheme_on=="Quantity":
 				for i in cwi:
@@ -542,12 +542,34 @@ def add_free_item(doc,method):
 			elif scheme_doc.scheme_on=="Price":
 				# frappe.msgprint("Price")
 				price_list_rate = frappe.db.get_value("Item Price",{"item_code": raw.item_code, "price_list": doc.selling_price_list}, "price_list_rate")
-				frappe.msgprint(price_list_rate)
-				frappe.msgprint(raw.item_code)
+				raw.price_list_rate = price_list_rate
+				# frappe.msgprint(price_list_rate)
+				# frappe.msgprint(raw.item_code)
+				#Price check on DN
+				#
+				# ss_rate_total = frappe.db.sql("""select sum(price_list_rate*qty) as ss_rate_total from `tabSchemes Selected` where parent='{0}' and scheme_name='{1}'""".format(doc.get("name"),raw.scheme_name),as_dict=1, debug=1)
+				ss_rate_total = 0
+				for i in doc.get("schemes_selected"):
+					if i.scheme_name == raw.scheme_name and i.price_list_rate:
+						price_list_rate = frappe.db.get_value("Item Price",{"item_code": raw.item_code, "price_list": doc.selling_price_list}, "price_list_rate")
+						raw.price_list_rate = price_list_rate
+						k = i.qty*i.price_list_rate
+						ss_rate_total = ss_rate_total + k
+						# frappe.msgprint(i.scheme_name)
+				# frappe.msgprint(ss_rate_total)
+				# frappe.msgprint(ss_rate_total[0]['ss_rate_total']) 
+				# ss_rate_total_in_dn = ss_rate_total[0]['ss_rate_total']
+				dl = frappe.db.sql("""select sum(price) as price from `tabScheme Management Item` where parent='{0}'""".format(scheme_doc.name),as_dict=1)
+				# frappe.msgprint(dl[0])
+				free_price = dl[0]['price']
+				# frappe.msgprint(free_price)
+				# frappe.msgprint(ss_rate_total)
+				if ss_rate_total > free_price:
+					frappe.throw("Over claim of price in Scheme {0}".format(raw.scheme_name))
 				if scheme_doc.apply_on == "Item Group":
 					# cwi_price = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer"),"item_group":scheme_doc.item_group},["qty","name","amount"],as_dict=1)
 					cwi_price = frappe.db.sql("""select name,amount,qty,effective_qty from `tabCustomerwise Item` where customer='{0}' 
-						and effective_qty>-3 and item_group='{1}'""".format(doc.get("customer"),scheme_doc.item_group),as_dict=1, debug=1)
+						and effective_qty>-3 and item_group='{1}'""".format(doc.get("customer"),scheme_doc.item_group),as_dict=1)
 					# print "cwi_price",cwi_price
 					for i in cwi_price:
 						if price_list_rate >0:	
@@ -555,7 +577,8 @@ def add_free_item(doc,method):
 							if price_list_rate <= scm_doc.effective_amount:
 								a = scm_doc.effective_amount
 								scm_doc.effective_amount = scm_doc.effective_amount - a
-								scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+								scm_doc.effective_qty = 0
+								scm_doc.claim_for_qty = 0
 								price_list_rate = price_list_rate - a
 								scm_doc.save()
 							elif price_list_rate > scm_doc.effective_amount:
@@ -563,6 +586,7 @@ def add_free_item(doc,method):
 								scm_doc = frappe.get_doc("Customerwise Item",i.name)
 								scm_doc.effective_amount = scm_doc.effective_amount - a
 								scm_doc.claim_for_qty = 0
+								scm_doc.effective_qty = 0
 								price_list_rate = price_list_rate - a
 								scm_doc.save()
 				if scheme_doc.apply_on == "Brand":
@@ -576,7 +600,8 @@ def add_free_item(doc,method):
 							if price_list_rate <= scm_doc.effective_amount:
 								a = scm_doc.effective_amount
 								scm_doc.effective_amount = scm_doc.effective_amount - a
-								scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+								scm_doc.claim_for_qty = 0
+								scm_doc.effective_qty = 0
 								price_list_rate = price_list_rate - a
 								scm_doc.save()
 							elif price_list_rate > scm_doc.effective_amount:
@@ -584,6 +609,7 @@ def add_free_item(doc,method):
 								scm_doc = frappe.get_doc("Customerwise Item",i.name)
 								scm_doc.effective_amount = scm_doc.effective_amount - a
 								scm_doc.claim_for_qty = 0
+								scm_doc.effective_qty = 0
 								price_list_rate = price_list_rate - a
 								scm_doc.save()
 				if scheme_doc.apply_on == "Item Code":
@@ -597,7 +623,8 @@ def add_free_item(doc,method):
 							if price_list_rate <= scm_doc.effective_amount:
 								a = scm_doc.effective_amount
 								scm_doc.effective_amount = scm_doc.effective_amount - a
-								scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+								scm_doc.claim_for_qty = 0
+								scm_doc.effective_qty = 0
 								price_list_rate = price_list_rate - a
 								scm_doc.save()
 							elif price_list_rate > scm_doc.effective_amount:
@@ -605,11 +632,12 @@ def add_free_item(doc,method):
 								scm_doc = frappe.get_doc("Customerwise Item",i.name)
 								scm_doc.effective_amount = scm_doc.effective_amount - a
 								scm_doc.claim_for_qty = 0
+								scm_doc.effective_qty = 0
 								price_list_rate = price_list_rate - a
 								scm_doc.save()
 				if price_list_rate>0:
-					print "qty_calculationqty_calculation",qty_calculation
-					frappe.throw("Over Claim for item {0}".format(raw.item_code))
+					print "qty_calculationqty_calculation",price_list_rate
+					# frappe.throw("Over Claim for item {0}".format(raw.item_code))
 
 		#add claim for price
 		# print scheme.amount/
