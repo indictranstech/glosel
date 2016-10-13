@@ -156,7 +156,7 @@ def dn_on_cancel(doc,method):
 
 
 def dn_validate(doc,method):
-	add_free_item(doc,method)
+	# add_free_item(doc,method)
 	# doc.total_price = 99
 	total = 0
 	total_free_qty = 0
@@ -396,13 +396,15 @@ def po_before_submit(doc,method):
 # 	add_free_item_in_so_from_po(doc,method)
 
 def add_free_item_in_so_from_po(doc,method):
-	frappe.msgprint("in add add_free_item_in_po")
+	print "in add add_free_item_in_po"
 	so_doc = frappe.new_doc("Sales Order")
 	so_doc.customer = doc.company
-	so_doc.delivery_date = frappe.utils.get_datetime()
-	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
-	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
 	default_company=frappe.defaults.get_defaults().get("company")
+	so_doc.delivery_date = frappe.utils.get_datetime()
+	default_expense_account=frappe.db.get_value("Company",default_company,"default_expense_account")
+	cost_center=frappe.db.get_value("Company",default_company,"cost_center")
+	default_warehouse=frappe.db.get_value("Company",default_company,"warehouse")
+	so_doc.company = default_company
 
 	for raw in doc.get("items"):
 		item = frappe.get_doc("Item",raw.item_code)
@@ -411,19 +413,22 @@ def add_free_item_in_so_from_po(doc,method):
 		nl.item_name = item.item_name
 		nl.description = item.description
 		nl.stock_uom = item.stock_uom
-		nl.warehouse = item.default_warehouse
+		nl.warehouse = default_warehouse
 		nl.expense_account = default_expense_account
 		nl.cost_center = cost_center
 		nl.qty=raw.qty
 		nl.rate=0
 		nl.amount=0
 		nl.price_list_rate=0
-
-	so_doc.save()
+	# so_doc.flags.ignore_permissions = True
+	so_doc.save(ignore_permissions = True)
 
 def add_free_item_in_po(doc,method):
 	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
 	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
+	default_warehouse=frappe.db.get_value("Company",doc.company,"warehouse")
+	print "\n\nwarehouse",default_warehouse
+	doc.items=[]
 	for raw in doc.get("claim_available"):
 		if raw.selected_item:
 			item = frappe.get_doc("Item",raw.selected_item)
@@ -445,7 +450,7 @@ def add_free_item_in_po(doc,method):
 		nl.item_name = item.item_name
 		nl.description = item.description
 		nl.stock_uom = item.stock_uom
-		nl.warehouse = item.default_warehouse
+		nl.warehouse = default_warehouse
 		nl.expense_account = default_expense_account
 		nl.cost_center = cost_center
 		nl.delivery_note = raw.delivery_note
@@ -464,7 +469,7 @@ def add_free_item(doc,method):
 	dn_items = []
 	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
 	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
-	frappe.msgprint("in add_free_item")
+	print "in add_free_item"
 	for raw in doc.get("schemes_selected"):
 		item = frappe.get_doc("Item",raw.item_code)
 		dn_items.append(raw.item_code)
@@ -499,6 +504,7 @@ def add_free_item(doc,method):
 					a = scm_doc.effective_qty
 					scm_doc.effective_qty = scm_doc.effective_qty - a
 					scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+					qty_calculation = qty_calculation - a
 					print "ef qty",scm_doc.effective_qty
 					print "qty_calculation",qty_calculation
 					scm_doc.save()

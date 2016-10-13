@@ -63,10 +63,11 @@ def create_sal_slip(doc):
 	# return doc.create_log(ss_list)
 
 def customer_validation(doc,method):
-	roles=frappe.get_roles(frappe.session.user)
-	if "Distributer" in roles:
-		if doc.customer_group=="Distributer" or doc.customer_group=="Super Stockist":
-			frappe.throw(_("You can not create a Distributor or Super Stockist"))
+	pass
+	# roles=frappe.get_roles(frappe.session.user)
+	# if "Distributer" in roles:
+	# 	if doc.customer_group=="Distributer" or doc.customer_group=="Super Stockist":
+	# 		frappe.throw(_("You can not create a Distributor or Super Stockist"))
 
 
 	if doc.customer_group=="Distributer":
