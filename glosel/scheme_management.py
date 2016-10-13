@@ -156,7 +156,7 @@ def dn_on_cancel(doc,method):
 
 
 def dn_validate(doc,method):
-	# add_free_item(doc,method)
+	add_free_item(doc,method)
 	# doc.total_price = 99
 	total = 0
 	total_free_qty = 0
@@ -164,8 +164,9 @@ def dn_validate(doc,method):
 # frappe.db.get_value("Company",doc.company,"default_expense_account")
 		if raw.free_item_of_scheme:
 			price_list_rate = frappe.db.get_value("Item Price",{"item_code": raw.item_code, "price_list": doc.selling_price_list}, "price_list_rate")
-			total_free_qty = total_free_qty + raw.qty
-			total = total+(price_list_rate*raw.qty)
+			if raw.qty:
+				total_free_qty = total_free_qty + raw.qty
+				total = total+(price_list_rate*raw.qty)
 	doc.total_price = total
 	doc.total_qty_of_free_item = total_free_qty
 
@@ -281,19 +282,26 @@ def get_schemes(doc):
 	available_scheme_list = []
 
 # for raw in doc.get("items"):
-	print "\n\customer_group",doc.get("customer_group")
+	# print "\n\customer_group",doc.get("customer_group")
 	if doc.get("customer_group") == "Distributer":
 		company = doc.get("company")
-		print "Distributer Scheme"
-		scheme_title= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and item_code=%s and scheme_depends_upon='Company' and company=%s""",(raw["item_code"],company),as_dict=1)
+		# print "Distributer Scheme"
+		customer = doc.get("customer")
+		scheme_title= frappe.db.sql("""select title,company,scheme_depends_upon from `tabScheme Management` where active=1  and valid_upto > now() and (scheme_depends_upon='Company'  and company='{0}') or (scheme_depends_upon='ALL')""".format(customer),as_dict=1)
 	else:
-		print "non distributor"
-		scheme_title= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and item_code=%s and scheme_depends_upon='ALL'""",(raw["item_code"]),as_dict=1)
+		customer = doc.get("customer")
+	# 	print "non distributor"
+		scheme_title= frappe.db.sql("""select title,company,scheme_depends_upon from `tabScheme Management` where active=1  and valid_upto > now() and (scheme_depends_upon='Customer'  and customer='{0}') or (scheme_depends_upon='ALL')""".format(customer),as_dict=1)
 	# item_obj = frappe.get_doc("Item",raw["item_code"])
 	# scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and item_group=%s""",(item_obj.item_group),as_dict=1)
-	scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and apply_on='Item Group'""",as_dict=1)
-
-	print "scheme_title",scheme_title
+	if doc.get("customer_group") == "Distributer":
+		company = doc.get("company")
+		customer = doc.get("customer")
+		scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and apply_on='Item Group' and (scheme_depends_upon='Company'  and company='{0}') or (scheme_depends_upon='ALL')""".format(customer),as_dict=1)
+	else:
+		customer = doc.get("customer")
+		scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and apply_on='Item Group' and (scheme_depends_upon='Customer'  and customer='{0}') or (scheme_depends_upon='ALL')""".format(customer),as_dict=1)
+	# print "scheme_title",scheme_title
 	# frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) 
 	#  		 order by CAST(priority as UNSIGNED) desc""",(doc.posting_date,doc.posting_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group),as_dict=1)
 	# gives all the schemes applicable on current  item,brand and item group irrespective of amount and quantity
@@ -484,51 +492,128 @@ def add_free_item(doc,method):
 		nl.qty = raw.qty
 		nl.free_item_of_scheme = raw.scheme_name
 		scheme = frappe.get_doc("Scheme Management",raw.scheme_name)
-		nl.claim_for_qty = raw.qty*scheme.quantity
+		if raw.qty:
+			nl.claim_for_qty = raw.qty*scheme.quantity
+
+		#scheme on price
 
 		#update claim details in CWI
-		cwi = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer")},["qty","name"],as_dict=1)
-		
 		# print "\nccwi",cwi
-		print "raw.qty",raw.qty
 		# frappe.throw("Over Claim for item {0}".format(raw.item_code))
-
-		qty_calculation = raw.qty
-		for i in cwi:
-			print "cwi",i
-			if qty_calculation >0:	
-				scm_doc = frappe.get_doc("Customerwise Item",i.name)
-				print "in qty_calculation",qty_calculation
-				if qty_calculation <= scm_doc.effective_qty:
-					print "first"
-					a = scm_doc.effective_qty
-					scm_doc.effective_qty = scm_doc.effective_qty - a
-					scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
-					qty_calculation = qty_calculation - a
-					print "ef qty",scm_doc.effective_qty
-					print "qty_calculation",qty_calculation
-					scm_doc.save()
-				if qty_calculation > scm_doc.effective_qty:
-					a = float(scm_doc.effective_qty)
-					scm_doc = frappe.get_doc("Customerwise Item",i.name)
-					print scm_doc.effective_qty
-					print "for qty",scm_doc.qty
-					print "scm_doc.effective_qty",float(scm_doc.effective_qty)
-					print "a",a
-					scm_doc.effective_qty = scm_doc.effective_qty - a
-					scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
-					print "Value of a",a					
-					scm_doc.save()
-					qty_calculation = qty_calculation - a
-					print " qty cal",qty_calculation					
+		print "raw.qty",raw.qty
+		cwi = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer")},["qty","name"],as_dict=1)
+		if raw.scheme_name:
+			scheme_doc = frappe.get_doc("Scheme Management",raw.scheme_name)
+			frappe.msgprint(raw.scheme_name)
+			qty_calculation = raw.qty
+			if scheme_doc.scheme_on=="Quantity":
+				for i in cwi:
+					print "cwi",i
+					if qty_calculation >0:	
+						scm_doc = frappe.get_doc("Customerwise Item",i.name)
+						print "in qty_calculation",qty_calculation
+						if qty_calculation <= scm_doc.effective_qty:
+							print "first"
+							a = scm_doc.effective_qty
+							scm_doc.effective_qty = scm_doc.effective_qty - a
+							scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+							qty_calculation = qty_calculation - a
+							print "ef qty",scm_doc.effective_qty
+							print "qty_calculation",qty_calculation
+							scm_doc.save()
+						if qty_calculation > scm_doc.effective_qty:
+							a = float(scm_doc.effective_qty)
+							scm_doc = frappe.get_doc("Customerwise Item",i.name)
+							print scm_doc.effective_qty
+							print "for qty",scm_doc.qty
+							print "scm_doc.effective_qty",float(scm_doc.effective_qty)
+							print "a",a
+							scm_doc.effective_qty = scm_doc.effective_qty - a
+							scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+							print "Value of a",a					
+							scm_doc.save()
+							qty_calculation = qty_calculation - a
+							print " qty cal",qty_calculation					
+							# break
+				if qty_calculation>0:
+					print "qty_calculationqty_calculation",qty_calculation
+					frappe.throw("Over Claim for item {0}".format(raw.item_code))
 					# break
-		if qty_calculation>0:
-			print "qty_calculationqty_calculation",qty_calculation
-			frappe.throw("Over Claim for item {0}".format(raw.item_code))
-				# break
+			elif scheme_doc.scheme_on=="Price":
+				# frappe.msgprint("Price")
+				price_list_rate = frappe.db.get_value("Item Price",{"item_code": raw.item_code, "price_list": doc.selling_price_list}, "price_list_rate")
+				frappe.msgprint(price_list_rate)
+				frappe.msgprint(raw.item_code)
+				if scheme_doc.apply_on == "Item Group":
+					# cwi_price = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer"),"item_group":scheme_doc.item_group},["qty","name","amount"],as_dict=1)
+					cwi_price = frappe.db.sql("""select name,amount,qty,effective_qty from `tabCustomerwise Item` where customer='{0}' 
+						and effective_qty>-3 and item_group='{1}'""".format(doc.get("customer"),scheme_doc.item_group),as_dict=1, debug=1)
+					# print "cwi_price",cwi_price
+					for i in cwi_price:
+						if price_list_rate >0:	
+							scm_doc = frappe.get_doc("Customerwise Item",i.name)
+							if price_list_rate <= scm_doc.effective_amount:
+								a = scm_doc.effective_amount
+								scm_doc.effective_amount = scm_doc.effective_amount - a
+								scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+								price_list_rate = price_list_rate - a
+								scm_doc.save()
+							elif price_list_rate > scm_doc.effective_amount:
+								a = float(scm_doc.effective_amount)
+								scm_doc = frappe.get_doc("Customerwise Item",i.name)
+								scm_doc.effective_amount = scm_doc.effective_amount - a
+								scm_doc.claim_for_qty = 0
+								price_list_rate = price_list_rate - a
+								scm_doc.save()
+				if scheme_doc.apply_on == "Brand":
+					# cwi_price = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer"),"item_group":scheme_doc.item_group},["qty","name","amount"],as_dict=1)
+					cwi_price = frappe.db.sql("""select name,amount,qty,effective_qty from `tabCustomerwise Item` where customer='{0}' 
+						and effective_qty>-3 and brand='{1}'""".format(doc.get("customer"),scheme_doc.brand),as_dict=1, debug=1)
+					# print "cwi_price",cwi_price
+					for i in cwi_price:
+						if price_list_rate >0:	
+							scm_doc = frappe.get_doc("Customerwise Item",i.name)
+							if price_list_rate <= scm_doc.effective_amount:
+								a = scm_doc.effective_amount
+								scm_doc.effective_amount = scm_doc.effective_amount - a
+								scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+								price_list_rate = price_list_rate - a
+								scm_doc.save()
+							elif price_list_rate > scm_doc.effective_amount:
+								a = float(scm_doc.effective_amount)
+								scm_doc = frappe.get_doc("Customerwise Item",i.name)
+								scm_doc.effective_amount = scm_doc.effective_amount - a
+								scm_doc.claim_for_qty = 0
+								price_list_rate = price_list_rate - a
+								scm_doc.save()
+				if scheme_doc.apply_on == "Item Code":
+					# cwi_price = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer"),"item_group":scheme_doc.item_group},["qty","name","amount"],as_dict=1)
+					cwi_price = frappe.db.sql("""select name,amount,qty,effective_qty from `tabCustomerwise Item` where customer='{0}' 
+						and effective_qty>-3 and item_code='{1}'""".format(doc.get("customer"),scheme_doc.item_code),as_dict=1, debug=1)
+					# print "cwi_price",cwi_price
+					for i in cwi_price:
+						if price_list_rate >0:	
+							scm_doc = frappe.get_doc("Customerwise Item",i.name)
+							if price_list_rate <= scm_doc.effective_amount:
+								a = scm_doc.effective_amount
+								scm_doc.effective_amount = scm_doc.effective_amount - a
+								scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
+								price_list_rate = price_list_rate - a
+								scm_doc.save()
+							elif price_list_rate > scm_doc.effective_amount:
+								a = float(scm_doc.effective_amount)
+								scm_doc = frappe.get_doc("Customerwise Item",i.name)
+								scm_doc.effective_amount = scm_doc.effective_amount - a
+								scm_doc.claim_for_qty = 0
+								price_list_rate = price_list_rate - a
+								scm_doc.save()
+				if price_list_rate>0:
+					print "qty_calculationqty_calculation",qty_calculation
+					frappe.throw("Over Claim for item {0}".format(raw.item_code))
+
 		#add claim for price
 		# print scheme.amount/
-		print "claim_for_qty",raw.qty*scheme.quantity
+		# print "claim_for_qty",raw.qty*scheme.quantity
 	# frappe.msgprint("dn_before_submit")
 
 
