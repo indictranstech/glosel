@@ -298,10 +298,10 @@ def get_schemes(doc):
 	if doc.get("customer_group") == "Distributer":
 		company = doc.get("company")
 		customer = doc.get("customer")
-		scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and apply_on='Item Group' and (scheme_depends_upon='Company'  and company='{0}') or (scheme_depends_upon='ALL')""".format(customer),as_dict=1)
+		scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and (apply_on='Item Group' or apply_on='Brand') and (scheme_depends_upon='Company'  and company='{0}') or (scheme_depends_upon='ALL')""".format(customer),as_dict=1)
 	else:
 		customer = doc.get("customer")
-		scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and apply_on='Item Group' and (scheme_depends_upon='Customer'  and customer='{0}') or (scheme_depends_upon='ALL')""".format(customer),as_dict=1)
+		scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and (apply_on='Item Group' or apply_on='Brand') and (scheme_depends_upon='Customer'  and customer='{0}') or (scheme_depends_upon='ALL')""".format(customer),as_dict=1)
 	# print "scheme_title",scheme_title
 	# frappe.db.sql("""select title from `tabScheme Management` where  active = 1 and date(valid_from)<=%s and date(valid_upto)>=%s and (item_code=%s or item_group=%s or brand=%s) and (company=%s or territory=%s or customer=%s or customer_group=%s) 
 	#  		 order by CAST(priority as UNSIGNED) desc""",(doc.posting_date,doc.posting_date,item_code,item_group,brand,customer_company,company_territory,so_customer,customer_group),as_dict=1)
@@ -312,7 +312,7 @@ def get_schemes(doc):
 		scheme_list_for_group.append(i["title"])
 	for i in scheme_title:
 		scheme_list.append(i["title"])
-	# print "\n\nscheme_listttttt",scheme_list
+	print "\n\nscheme_listttttt",scheme_list
 
 	# print "\n\schemelist for Item Group",scheme_list
 
@@ -368,6 +368,22 @@ def get_schemes(doc):
 		if scheme_obj.apply_on=="Item Group" and scheme_obj.scheme_on=="Price":
 			effective_amount_check=frappe.db.sql("""select sum(effective_amount) as effective_amount from 
 				`tabCustomerwise Item`  where customer=%s  group by item_group having item_group=%s""",(dn_customer,scheme_obj.item_group),as_dict=1,debug=1)
+			if effective_amount_check:
+				effective_amount_check = effective_amount_check[0]["effective_amount"]
+				if effective_amount_check>=scheme_obj.amount:
+						available_scheme_list.append(scheme_obj.title)
+
+		if scheme_obj.apply_on=="Brand" and scheme_obj.scheme_on=="Quantity":
+			effective_qty_check=frappe.db.sql("""select sum(effective_qty) as effective_qty from 
+				`tabCustomerwise Item`  where customer=%s  group by brand having brand=%s""",(dn_customer,scheme_obj.brand),as_dict=1,debug=1)
+			if effective_qty_check:
+				effective_qty_check = effective_qty_check[0]["effective_qty"]
+				if effective_qty_check>=scheme_obj.minimum_quantity and effective_qty_check>=scheme_obj.quantity:
+						available_scheme_list.append(scheme_obj.title)
+
+		if scheme_obj.apply_on=="Brand" and scheme_obj.scheme_on=="Price":
+			effective_amount_check=frappe.db.sql("""select sum(effective_amount) as effective_amount from 
+				`tabCustomerwise Item`  where customer=%s  group by brand having brand=%s""",(dn_customer,scheme_obj.brand),as_dict=1,debug=1)
 			if effective_amount_check:
 				effective_amount_check = effective_amount_check[0]["effective_amount"]
 				if effective_amount_check>=scheme_obj.amount:
