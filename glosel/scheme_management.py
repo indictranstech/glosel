@@ -92,8 +92,8 @@ def dn_submit(doc,method):
 						elif scheme_obj.apply_on=="Brand" and scheme_obj.scheme_on=="Quantity": 
 							# main_object_name=scheme_obj.brand
 							quantity=quantity=frappe.db.sql("""select sum(effective_qty) from `tabCustomerwise Item` where customer=%s and brand=%s""",(doc.customer,scheme_obj.brand))
-						if quantity>=scheme_obj.minimum_quantity and quantity>=scheme_obj.quantity:
-							scheme_list.append(scheme_name)
+							if quantity>=scheme_obj.minimum_quantity and quantity>=scheme_obj.quantity:
+								scheme_list.append(scheme_name)
 
 				# main_object_criteria=scheme_obj.apply_on
 				# for scheme_raw in scheme_obj.get("freebie_items"):
@@ -156,7 +156,8 @@ def dn_on_cancel(doc,method):
 
 
 def dn_validate(doc,method):
-	add_free_item(doc,method)
+	pass
+	# add_free_item(doc,method)
 	# doc.total_price = 99
 # 	total = 0
 # 	total_free_qty = 0
@@ -562,8 +563,8 @@ def add_free_item(doc,method):
 				dl = frappe.db.sql("""select sum(price) as price from `tabScheme Management Item` where parent='{0}'""".format(scheme_doc.name),as_dict=1)
 				# frappe.msgprint(dl[0])
 				free_price = dl[0]['price']
-				# frappe.msgprint(free_price)
-				# frappe.msgprint(ss_rate_total)
+				frappe.msgprint(free_price)
+				frappe.msgprint(ss_rate_total)
 				if ss_rate_total > free_price:
 					frappe.throw("Over claim of price in Scheme {0}".format(raw.scheme_name))
 				if scheme_doc.apply_on == "Item Group":
