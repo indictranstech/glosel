@@ -156,8 +156,8 @@ def dn_on_cancel(doc,method):
 
 
 def dn_validate(doc,method):
-	pass
 	# add_free_item(doc,method)
+	pass
 	# doc.total_price = 99
 # 	total = 0
 # 	total_free_qty = 0
@@ -346,7 +346,7 @@ def get_schemes(doc):
 		#Check Item Price Validation
 		if scheme_obj.apply_on=="Item Code" and scheme_obj.scheme_on=="Price":
 			effective_amount_check=frappe.db.sql("""select sum(effective_amount) as effective_amount from `tabCustomerwise Item` 
-				where customer=%s and item_code=%s""",(dn_customer,raw["item_code"]),as_dict=1)
+				where customer=%s and effective_qty!=0 and item_code=%s""",(dn_customer,raw["item_code"]),as_dict=1)
 			# print "\neffective_amount",effective_amount_check
 			if effective_amount_check>=scheme_obj.amount:
 					available_scheme_list.append(scheme_obj.title)
@@ -367,7 +367,7 @@ def get_schemes(doc):
 		
 		if scheme_obj.apply_on=="Item Group" and scheme_obj.scheme_on=="Price":
 			effective_amount_check=frappe.db.sql("""select sum(effective_amount) as effective_amount from 
-				`tabCustomerwise Item`  where customer=%s  group by item_group having item_group=%s""",(dn_customer,scheme_obj.item_group),as_dict=1,debug=1)
+				`tabCustomerwise Item`  where customer=%s and effective_qty!=0 group by item_group having item_group=%s""",(dn_customer,scheme_obj.item_group),as_dict=1,debug=1)
 			if effective_amount_check:
 				effective_amount_check = effective_amount_check[0]["effective_amount"]
 				if effective_amount_check>=scheme_obj.amount:
@@ -383,7 +383,7 @@ def get_schemes(doc):
 
 		if scheme_obj.apply_on=="Brand" and scheme_obj.scheme_on=="Price":
 			effective_amount_check=frappe.db.sql("""select sum(effective_amount) as effective_amount from 
-				`tabCustomerwise Item`  where customer=%s  group by brand having brand=%s""",(dn_customer,scheme_obj.brand),as_dict=1,debug=1)
+				`tabCustomerwise Item`  where customer=%s and effective_qty!=0 group by brand having brand=%s""",(dn_customer,scheme_obj.brand),as_dict=1,debug=1)
 			if effective_amount_check:
 				effective_amount_check = effective_amount_check[0]["effective_amount"]
 				if effective_amount_check>=scheme_obj.amount:
@@ -521,7 +521,14 @@ def add_free_item(doc,method):
 		cwi = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer")},["qty","name"],as_dict=1)
 		if raw.scheme_name:
 			scheme_doc = frappe.get_doc("Scheme Management",raw.scheme_name)
-			# frappe.msgprint(raw.scheme_name)
+			current_eff_qty = frappe.db.sql("""select sum(effective_qty) as effective_qty from `tabCustomerwise Item` where customer='{0}' and item_code='{1}'""".format(doc.get("customer"),'3000179'),as_dict=1,debug=1)
+			current_eff_qty_check = current_eff_qty[0]['effective_qty']
+
+			if scheme_doc.scheme_on=="Quantity" and scheme_doc.apply_on=="Item Code":
+				old_qty = raw.qty*scheme.quantity
+				if current_eff_qty_check < old_qty:
+					frappe.throw("Over Claim for item {0}".format(raw.item_code))
+			# frappe.throw(raw.qty)
 			qty_calculation = raw.qty
 			if scheme_doc.scheme_on=="Quantity":
 				for i in cwi:
