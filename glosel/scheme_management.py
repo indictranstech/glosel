@@ -499,8 +499,8 @@ def add_free_item(doc,method):
 	dn_items = []
 	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
 	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
-	print "in add_free_item"
-	print "here"
+	# print "in add_free_item"
+	# print "here"
 	for raw in doc.get("schemes_selected"):
 		item = frappe.get_doc("Item",raw.item_code)
 		dn_items.append(raw.item_code)
@@ -533,7 +533,21 @@ def add_free_item(doc,method):
 				old_qty = raw.qty*scheme.quantity
 				if current_eff_qty_check < old_qty:
 					frappe.throw("Over Claim for item {0}".format(raw.item_code))
+			if scheme_doc.scheme_on=="Quantity" and scheme_doc.apply_on=="Item Group":
+				old_qty = raw.qty*scheme.quantity
+				current_eff_qty = frappe.db.sql("""select sum(effective_qty) as effective_qty from `tabCustomerwise Item` where customer='{0}' and item_group='{1}'""".format(doc.get("customer"),scheme_doc.item_group),as_dict=1,debug=1)
+				current_eff_qty_check = current_eff_qty[0]['effective_qty']
+				if current_eff_qty_check < old_qty:
+					frappe.throw("Over Claim for item {0}".format(raw.item_code))
+			if scheme_doc.scheme_on=="Quantity" and scheme_doc.apply_on=="Brand":
+				old_qty = raw.qty*scheme.quantity
+				current_eff_qty = frappe.db.sql("""select sum(effective_qty) as effective_qty from `tabCustomerwise Item` where customer='{0}' and brand='{1}'""".format(doc.get("customer"),scheme_doc.brand),as_dict=1,debug=1)
+				current_eff_qty_check = current_eff_qty[0]['effective_qty']
+				if current_eff_qty_check < old_qty:
+					frappe.throw("Over Claim for item {0}".format(raw.item_code))
+			
 			# frappe.throw(raw.qty)
+			# frappe.throw("test")
 			qty_calculation = raw.qty
 			if scheme_doc.scheme_on=="Quantity":
 				for i in cwi:
