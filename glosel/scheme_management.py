@@ -346,10 +346,15 @@ def get_schemes(doc):
 		#Check Item Price Validation
 		if scheme_obj.apply_on=="Item Code" and scheme_obj.scheme_on=="Price":
 			effective_amount_check=frappe.db.sql("""select sum(effective_amount) as effective_amount from `tabCustomerwise Item` 
-				where customer=%s and effective_qty!=0 and item_code=%s""",(dn_customer,raw["item_code"]),as_dict=1)
-			# print "\neffective_amount",effective_amount_check
+				where customer=%s and effective_qty!=0 and item_code=%s""",(dn_customer,scheme_obj.item_code),as_dict=1,debug=1)
+			print "****************************"
+			print "\neffective_amount",effective_amount_check
+			print "before schm",available_scheme_list
+			effective_amount_check = effective_amount_check[0]['effective_amount']
+			print effective_amount_check
 			if effective_amount_check>=scheme_obj.amount:
 					available_scheme_list.append(scheme_obj.title)
+					print "after schm",available_scheme_list
 	
 	# print "scheme_list_for_group--------",scheme_list_for_group
 	for i in scheme_list_for_group:
