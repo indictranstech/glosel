@@ -326,7 +326,7 @@ def get_schemes(doc):
 		if scheme_obj.apply_on=="Item Code" and scheme_obj.scheme_on=="Quantity":
 			# main_object_name=scheme_obj.item_code
 			effective_qty=frappe.db.sql("""select sum(effective_qty) as effective_qty from `tabCustomerwise Item` 
-				where customer=%s and item_code=%s""",(dn_customer,raw["item_code"]),as_dict=1)
+				where customer=%s and item_code=%s""",(dn_customer,scheme_obj.item_code),as_dict=1)
 			print "effective_qty",effective_qty[0]["effective_qty"]
 			effective_qty_check = effective_qty[0]["effective_qty"]
 
@@ -500,6 +500,7 @@ def add_free_item(doc,method):
 	default_expense_account=frappe.db.get_value("Company",doc.company,"default_expense_account")
 	cost_center=frappe.db.get_value("Company",doc.company,"cost_center")
 	print "in add_free_item"
+	print "here"
 	for raw in doc.get("schemes_selected"):
 		item = frappe.get_doc("Item",raw.item_code)
 		dn_items.append(raw.item_code)
@@ -526,9 +527,8 @@ def add_free_item(doc,method):
 		cwi = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer")},["qty","name"],as_dict=1)
 		if raw.scheme_name:
 			scheme_doc = frappe.get_doc("Scheme Management",raw.scheme_name)
-			current_eff_qty = frappe.db.sql("""select sum(effective_qty) as effective_qty from `tabCustomerwise Item` where customer='{0}' and item_code='{1}'""".format(doc.get("customer"),'3000179'),as_dict=1,debug=1)
+			current_eff_qty = frappe.db.sql("""select sum(effective_qty) as effective_qty from `tabCustomerwise Item` where customer='{0}' and item_code='{1}'""".format(doc.get("customer"),raw.item_code),as_dict=1,debug=1)
 			current_eff_qty_check = current_eff_qty[0]['effective_qty']
-
 			if scheme_doc.scheme_on=="Quantity" and scheme_doc.apply_on=="Item Code":
 				old_qty = raw.qty*scheme.quantity
 				if current_eff_qty_check < old_qty:
@@ -537,18 +537,15 @@ def add_free_item(doc,method):
 			qty_calculation = raw.qty
 			if scheme_doc.scheme_on=="Quantity":
 				for i in cwi:
-					print "cwi",i
 					if qty_calculation >0:	
 						scm_doc = frappe.get_doc("Customerwise Item",i.name)
-						print "in qty_calculation",qty_calculation
 						if qty_calculation <= scm_doc.effective_qty:
-							print "first"
 							a = scm_doc.effective_qty
 							scm_doc.effective_qty = scm_doc.effective_qty - a
 							scm_doc.claim_for_qty = scm_doc.claim_for_qty + a
 							qty_calculation = qty_calculation - a
-							print "ef qty",scm_doc.effective_qty
-							print "qty_calculation",qty_calculation
+							# print "ef qty",scm_doc.effective_qty
+							# print "qty_calculation",qty_calculation
 							scm_doc.save()
 						if qty_calculation > scm_doc.effective_qty:
 							a = float(scm_doc.effective_qty)
@@ -642,6 +639,7 @@ def add_free_item(doc,method):
 								price_list_rate = price_list_rate - a
 								scm_doc.save()
 				if scheme_doc.apply_on == "Item Code":
+					print "In item code"
 					# cwi_price = frappe.db.get_values("Customerwise Item",{"customer":doc.get("customer"),"item_group":scheme_doc.item_group},["qty","name","amount"],as_dict=1)
 					cwi_price = frappe.db.sql("""select name,amount,qty,effective_qty from `tabCustomerwise Item` where customer='{0}' 
 						and effective_qty>-3 and item_code='{1}'""".format(doc.get("customer"),scheme_doc.item_code),as_dict=1, debug=1)
@@ -766,20 +764,28 @@ def get_free_item_by_brand(doc,apply_on,scheme_name):
 			print i["item_code"]
 			dli = frappe.db.sql("""select sum(effective_qty) as effective_qty from `tabCustomerwise Item` where 
 				 customer = '{2}' group by item_code having item_code = '{1}'""".format(scheme_name,i["item_code"],customer),as_dict=1, debug=1)
-			effective_qty_per_item.append(dli[0])
+			if len(dli)>0:
+				effective_qty_per_item.append(dli[0])
+			else:
+				effective_qty_per_item.append({'effective_qty':0})
 		
 		# (29-22%3)/3
 		scm_doc=frappe.get_doc("Scheme Management",scheme_name)
-		for i in range(len(dl)):
-			free_qty= frappe.db.sql("""select quantity from `tabScheme Management Item` where parent='{0}' and item_code='{1}'""".format(scheme_name,dl[i]['item_code']),as_dict=1,debug=1)
-			print "ed",effective_qty_per_item[i]['effective_qty'],"b",scm_doc.quantity,"c",free_qty[0]['quantity']
-			if scm_doc.quantity>0:
-				a=effective_qty_per_item[i]['effective_qty']/(float(scm_doc.quantity)/free_qty[0]['quantity'])
-				effective_qty_per_item[i]['effective_qty'] = a
-			else:
-				effective_qty_per_item[i]['effective_qty'] = 0
-		for i in range(len(dl)):
-		     dl[i]['effective_qty'] = effective_qty_per_item[i]['effective_qty']
+		if len(dl)>0:
+			for i in range(len(dl)):
+				free_qty= frappe.db.sql("""select quantity from `tabScheme Management Item` where parent='{0}' and item_code='{1}'""".format(scheme_name,dl[i]['item_code']),as_dict=1,debug=1)
+				# print "ed",effective_qty_per_item[i]['effective_qty'],"b",scm_doc.quantity,"c",free_qty[0]['quantity']
+				if len(free_qty)>0:
+					free_qty=free_qty[0]['quantity']
+				else:
+					free_qty=0
+				if scm_doc.quantity>0:
+					a=effective_qty_per_item[i]['effective_qty']/(float(scm_doc.quantity)/free_qty)
+					effective_qty_per_item[i]['effective_qty'] = a
+				else:
+					effective_qty_per_item[i]['effective_qty'] = 0
+			for i in range(len(dl)):
+			     dl[i]['effective_qty'] = effective_qty_per_item[i]['effective_qty']
 
 		# print "updated",dli
 		return dl
