@@ -17,7 +17,7 @@ app_include_js = ["assets/js/glosel.min.js"]
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/glosel/css/glosel.css"
-# app_include_js = "/assets/glosel/js/glosel.js"
+app_include_js = "/assets/js/glosel.desk.min.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/glosel/css/glosel.css"
@@ -72,11 +72,14 @@ app_include_js = ["assets/js/glosel.min.js"]
 # Hook on document methods and events
 
 doc_events = {
-	"Customer": {
-		"validate": "glosel.custom_py_methods.customer_validation",
-		# "on_cancel": "method",
-		# "on_trash": "method"
+	"*": {
+		"validate": ["glosel.custom_py_methods.make_title_case", "glosel.custom_py_methods.generate_calling_code"]
 	},
+	# "Customer": {
+	# 	"validate": ["glosel.custom_py_methods.customer_validation","glosel.custom_py_methods.make_title_case"]
+	# 	# "on_cancel": "method",
+	# 	# "on_trash": "method"
+	# },
 	"Delivery Note": {
 		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add","glosel.scheme_management.dn_return_submit"],
 		"on_cancel":"glosel.scheme_management.dn_on_cancel",
@@ -107,16 +110,35 @@ doc_events = {
 		"on_submit":"glosel.scheme_management.so_submit",
 		# "on_trash": "method"
 	},
-	"Employee": {
-		"autoname": "glosel.custom_py_methods.employee_autoname",
+	# "Employee": {
+		#"validate": "glosel.custom_py_methods.make_title_case"
+		#"autoname": "glosel.custom_py_methods.employee_autoname",
 		# "on_cancel": "method",
 		# "on_trash": "method"
-	},
+	# },
 	"Employment Type": {
 		"validate": "glosel.custom_py_methods.employement_type_code_check",
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
+	# "User": {
+	# 	"validate": "glosel.custom_py_methods.make_title_case"
+	# },
+	# "Supplier": {
+	# 	"validate": "glosel.custom_py_methods.make_title_case"
+	# },
+	# "Lead": {
+	# 	"validate": "glosel.custom_py_methods.make_title_case"
+	# },
+	# "Contact": {
+	# 	"validate": "glosel.custom_py_methods.make_title_case"
+	# },
+	# "Sales Person": {
+	# 	"validate": "glosel.custom_py_methods.make_title_case"
+	# },
+	# "Sales Partner": {
+	# 	"validate": "glosel.custom_py_methods.make_title_case"
+	# }
 	# "Item": {
 	# 	"before_insert":
 	# 	# "on_cancel": "method",
