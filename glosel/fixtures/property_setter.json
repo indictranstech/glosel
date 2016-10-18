@@ -2174,5 +2174,22 @@
   "property": "reqd", 
   "property_type": "Check", 
   "value": "0"
+ }, 
+ {
+  "_assign": null, 
+  "_comments": null, 
+  "_liked_by": null, 
+  "_user_tags": null, 
+  "default_value": null, 
+  "doc_type": "Delivery Note", 
+  "docstatus": 0, 
+  "doctype": "Property Setter", 
+  "doctype_or_field": "DocField", 
+  "field_name": "customer", 
+  "modified": "2016-10-14 14:21:46.031065", 
+  "name": "Delivery Note-customer-width", 
+  "property": "width", 
+  "property_type": null, 
+  "value": "89"
  }
 ]
