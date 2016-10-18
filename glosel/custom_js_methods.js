@@ -146,32 +146,15 @@
 // 	return $c('runserverobj', args={'method':'glosel.custom_py_methods.create_sal_slip','docs':cur_frm.doc},callback);
 	
 // }
-// frappe.ui.form.on("Delivery Note","onload" ,function(frm){
-// 	items=cur_frm.doc.items
-// 	if (cur_frm.doc.is_return==1)
-// 	{
-// 	return frappe.call({
-// 			method: "glosel.api.fetch_supplier_uom",
-// 			args: {
-// 				return_against: frm.doc.return_against,
+frappe.ui.form.on("Delivery Note","onload" ,function(frm){
+	items=cur_frm.doc.items
+	if (cur_frm.doc.is_return==1)
+	{
+	return frappe.call({
+			method: "glosel.api.fetch_supplier_uom",
+			args: {
+				return_against: frm.doc.return_against,
 				
-// 			},
-// 			callback: function(r) {
-// 				if(r.message){
-// 					// console.log(r.message)
-// 					// console.log(items.unit_of_measure)
-// 					// items.unit_of_measure=r.message
-// 					// items.uom=r.message
-// 					console.log(items.uom)
-// 					// cur_frm.refresh_fields()
-// 					frappe.model.set_value(cdt, cdn, "uom", r.message);
-// 					console.log("before refresh",items.uom)
-// 					cur_frm.refresh_field("items")
-// 					console.log("after Refresh",items.uom)
-// 				}
-// 			}
-// 		});
-// 	}
 			},
 			callback: function(r) {
 				if(r.message){
@@ -208,64 +191,12 @@ find_lat_lon = function(doc, count) {
 	if(doc.street_name)
 		full_address += "+"+doc.street_name+","
 	if(doc.area)
+		full_address += "+"+doc.area+","
+	
 	full_address += "+"+doc.city+","+"+"+doc.country
 	post_code_address += doc.city+","+"+"+doc.state+","+"+"+doc.country
 	post_code = doc.post_code
 	
-// })
-
-cur_frm.cscript.on_update=function(doc)
-{
-
-		function_name()
-	}
-
-// custom_cakes_dialog: function () {
-// 		var me = this;
-// 		var dialog = new frappe.ui.Dialog({
-// 			width: 1100,
-// 			title: "Select <b>Custom Cake</b> Size",
-// 			fields:[
-// 				{fieldtype: 'HTML',
-// 					fieldname:'item_images', label: __("Item Images")},
-// 				{fieldtype: "Section Break", fieldname: "sb1"},
-// 				{fieldtype : 'Int',
-// 					fieldname:'age', label: __("Age")},
-// 				{fieldtype: "Column Break", fieldname: "cb3"},
-// 				{fieldtype: 'Section Break',
-// 					fieldname:'sb01'},
-// 				{fieldtype: 'Button', label: __("Add to Cart"), fieldname: "order_item"},
-// 				{fieldtype: "Column Break", fieldname: "cb4"},
-// 				{fieldtype: 'Button', label: __("Next"), fieldname: "next"}
-// 			]
-// 		});
-// 		dialog.show();
-// 		// body...
-// }
-
-	
-function_name =function (argument) {
-	 	var me = this;
-		var dialog = new frappe.ui.Dialog({
-			width: 1100,
-			title: "Select <b>Custom Cake</b> Size",
-			fields:[
-				{fieldtype: 'HTML',
-					fieldname:'item_images', label: __("Item Images")},
-				{fieldtype: "Section Break", fieldname: "sb1"},
-				{fieldtype : 'Int',
-					fieldname:'age', label: __("Age")},
-				{fieldtype: "Column Break", fieldname: "cb3"},
-				{fieldtype: 'Section Break',
-					fieldname:'sb01'},
-				{fieldtype: 'Button', label: __("Add to Cart"), fieldname: "order_item"},
-				{fieldtype: "Column Break", fieldname: "cb4"},
-				{fieldtype: 'Button', label: __("Next"), fieldname: "next"}
-			]
-		});
-		dialog.show();
-}
-
 	if(count <= 3 && count == 1){
 		addr = full_address
 	}
