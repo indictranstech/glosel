@@ -131,8 +131,9 @@ def item_autoname(brand):
 	
 	brand_code=str(frappe.db.get_value("Brand",{"name":brand},"code"))
 	company_code=str(frappe.db.get_value("Company",{"company_name":frappe.defaults.get_defaults().get("company")},"code"))
- 	doc.item_code = brand_code + '0001'
+ 	# item_code = brand_code + '0001'
 	substring_item_code = make_autoname(brand_code + '.####')
+	# frappe.msgprint(substring_item_code)
 	item_code=str(substring_item_code)+ str(company_code)
 	return item_code
 	
