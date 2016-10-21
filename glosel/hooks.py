@@ -75,11 +75,11 @@ doc_events = {
 	"*": {
 		"validate": ["glosel.custom_py_methods.make_title_case", "glosel.custom_py_methods.generate_calling_code"]
 	},
-	# "Customer": {
-	# 	"validate": ["glosel.custom_py_methods.customer_validation","glosel.custom_py_methods.make_title_case"]
-	# 	# "on_cancel": "method",
-	# 	# "on_trash": "method"
-	# },
+	"Customer": {
+		"validate": ["glosel.custom_py_methods.customer_validation","glosel.custom_py_methods.make_title_case"]
+		# "on_cancel": "method",
+		# "on_trash": "method"
+	},
 	"Delivery Note": {
 		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add","glosel.scheme_management.dn_return_submit"],
 		"on_cancel":"glosel.scheme_management.dn_on_cancel",
