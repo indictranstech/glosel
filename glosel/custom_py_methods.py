@@ -128,7 +128,7 @@ def employee_autoname(doc,method):
 
 @frappe.whitelist()
 def item_autoname(doc,method):
-	frappe.msgprint("hi")
+	#frappe.msgprint("hi")
 	
 	brand_code=str(frappe.db.get_value("Brand",{"name":doc.brand},"code"))
 	company_code=str(frappe.db.get_value("Company",{"company_name":frappe.defaults.get_defaults().get("company")},"code"))
