@@ -127,15 +127,16 @@ def employee_autoname(doc,method):
 		doc.name=str(number)+str(check_digit)
 
 @frappe.whitelist()
-def item_autoname(brand):
+def item_autoname(doc,method):
+	frappe.msgprint("hi")
 	
-	brand_code=str(frappe.db.get_value("Brand",{"name":brand},"code"))
+	brand_code=str(frappe.db.get_value("Brand",{"name":doc.brand},"code"))
 	company_code=str(frappe.db.get_value("Company",{"company_name":frappe.defaults.get_defaults().get("company")},"code"))
  	# item_code = brand_code + '0001'
 	substring_item_code = make_autoname(brand_code + '.####')
 	# frappe.msgprint(substring_item_code)
-	item_code=str(substring_item_code)+ str(company_code)
-	return item_code
+	doc.item_code=str(substring_item_code)+ str(company_code)
+	# doc.save()
 	
 def so_validate(doc,method):
 	print "so validate 2222222222222222222222222222222222222222"

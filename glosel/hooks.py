@@ -121,6 +121,11 @@ doc_events = {
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
+	"Item": {
+		"before_insert": "glosel.custom_py_methods.item_autoname",
+		# "on_cancel": "method",
+		# "on_trash": "method"
+	},
 	# "User": {
 	# 	"validate": "glosel.custom_py_methods.make_title_case"
 	# },

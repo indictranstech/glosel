@@ -47,15 +47,6 @@
  {
   "docstatus": 0, 
   "doctype": "Custom Script", 
-  "dt": "Item", 
-  "modified": "2016-10-21 12:30:20.381167", 
-  "name": "Item-Client", 
-  "script": "frappe.ui.form.on(\"Item\",\"brand\" ,function(frm){\n \tconsole.log(\"ffff\",frm.doc.brand)\n \tfrappe.call({\n \t\tmethod:\"glosel.custom_py_methods.item_autoname\",\n \t\targs:{\n \t\t\t\"brand\":frm.doc.brand\n \t\t},\n \t\tcallback: function(r) {\n \t\t\t\tif(r.message){\n \t\t\t\t\t// console.log(r.message)\n \t\t\t\t\tfrm.doc.item_code=r.message\n \t\t\t\t\t//console.log(items.uom)\n \t\t\t\t\t// cur_frm.refresh_fields()\n \t\t\t\t}\n \t\t\t}\n \t\t});\t})", 
-  "script_type": "Client"
- }, 
- {
-  "docstatus": 0, 
-  "doctype": "Custom Script", 
   "dt": "Process Payroll", 
   "modified": "2016-06-14 16:41:57.754889", 
   "name": "Process Payroll-Client", 
