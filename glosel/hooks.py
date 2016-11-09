@@ -84,7 +84,8 @@ doc_events = {
 		"on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add","glosel.scheme_management.dn_return_submit"],
 		"on_cancel":"glosel.scheme_management.dn_on_cancel",
 		"validate":"glosel.scheme_management.dn_validate",
-		"before_submit":"glosel.scheme_management.dn_before_submit"
+		"before_submit":"glosel.scheme_management.dn_before_submit",
+		"before_insert": "glosel.custom_py_methods.dn_autoname",
 		# "on_update": ["glosel.scheme_management.dn_update"]
 		# "on_trash": "method"
 	},
@@ -92,6 +93,7 @@ doc_events = {
 		# "on_submit": ["glosel.custom_py_methods.delivery_note_submit","glosel.scheme_management.dn_submit","glosel.scheme_management.distributer_outstanding_add","glosel.scheme_management.dn_return_submit"],
 		# "on_cancel":"glosel.scheme_management.dn_on_cancel",
 		"before_submit":"glosel.scheme_management.po_before_submit",
+		"before_insert": "glosel.custom_py_methods.po_autoname",
 		# "before_submit":"glosel.scheme_management.dn_before_submit"
 		# "validate": "glosel.scheme_management.po_before_submit_create_so"
 		# "on_trash": "method"
@@ -108,6 +110,7 @@ doc_events = {
 		# "on_update_after_submit":"glosel.scheme_management.dn_on_update_after_submit",
 		"before_submit":"glosel.scheme_management.so_before_submit",
 		"on_submit":"glosel.scheme_management.so_submit",
+		"before_insert": "glosel.custom_py_methods.so_autoname",
 		# "on_trash": "method"
 	},
 	# "Employee": {
@@ -125,6 +128,15 @@ doc_events = {
 		"before_insert": "glosel.custom_py_methods.item_autoname",
 		# "on_cancel": "method",
 		# "on_trash": "method"
+	},
+	"Sales Invoice": {
+		"before_insert": "glosel.custom_py_methods.si_autoname",
+	},
+	"Quotation": {
+		"before_insert": "glosel.custom_py_methods.qo_autoname",
+	},
+	"Purchase Invoice": {
+		"before_insert": "glosel.custom_py_methods.pi_autoname",
 	},
 	# "User": {
 	# 	"validate": "glosel.custom_py_methods.make_title_case"

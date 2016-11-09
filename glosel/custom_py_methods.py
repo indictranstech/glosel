@@ -137,7 +137,43 @@ def item_autoname(doc,method):
 	# frappe.msgprint(substring_item_code)
 	doc.item_code=str(substring_item_code)+ str(company_code)
 	# doc.save()
-	
+
+def so_autoname(doc,method):
+	cc=str(frappe.db.get_value("Company",{"name":doc.company},"code"))
+ 	so_name = "*"+cc+"*/CS/1617/SO/"+'.####'
+	substring_so = make_autoname(so_name + '.####')
+	doc.name=str(substring_so)
+
+def po_autoname(doc,method):
+	cc=str(frappe.db.get_value("Company",{"name":doc.company},"code"))
+ 	so_name = "*"+cc+"*/CS/1617/PO/"+'.####'
+	substring_so = make_autoname(so_name + '.####')
+	doc.name=str(substring_so)
+
+def dn_autoname(doc,method):
+	cc=str(frappe.db.get_value("Company",{"name":doc.company},"code"))
+ 	so_name = "*"+cc+"*/CS/1617/DN/"+'.####'
+	substring_so = make_autoname(so_name + '.####')
+	doc.name=str(substring_so)
+
+def si_autoname(doc,method):
+	cc=str(frappe.db.get_value("Company",{"name":doc.company},"code"))
+ 	so_name = "*"+cc+"*/CS/1617/SI/"+'.####'
+	substring_so = make_autoname(so_name + '.####')
+	doc.name=str(substring_so)
+
+def pi_autoname(doc,method):
+	cc=str(frappe.db.get_value("Company",{"name":doc.company},"code"))
+ 	so_name = "*"+cc+"*/CS/1617/PI/"+'.####'
+	substring_so = make_autoname(so_name + '.####')
+	doc.name=str(substring_so)
+
+def qo_autoname(doc,method):
+	cc=str(frappe.db.get_value("Company",{"name":doc.company},"code"))
+ 	so_name = "*"+cc+"*/CS/1617/QT/"+'.####'
+	substring_so = make_autoname(so_name + '.####')
+	doc.name=str(substring_so)
+
 def so_validate(doc,method):
 	print "so validate 2222222222222222222222222222222222222222"
 	# print "Inside ------------------------"
