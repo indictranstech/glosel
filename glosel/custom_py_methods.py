@@ -67,12 +67,12 @@ def create_sal_slip(doc):
 def customer_validation(doc,method):
 	# pass
 	roles=frappe.get_roles(frappe.session.user)
-	if "Distributer" in roles:
-		if doc.customer_group=="Distributer" or doc.customer_group=="Super Stockist":
+	if "Distributor" in roles:
+		if doc.customer_group=="Distributor" or doc.customer_group=="Super Stockist":
 			frappe.throw(_("You can not create a Distributor or Super Stockist"))
 
 
-	if doc.customer_group=="Distributer":
+	if doc.customer_group=="Distributor":
 		company_check=frappe.db.get_value("Company",{"company_name":doc.customer_name},"company_name")
 		if not company_check:
 			company=frappe.new_doc("Company")
@@ -83,7 +83,7 @@ def customer_validation(doc,method):
 
 def delivery_note_submit(doc,method):
 	customer=frappe.get_doc("Customer",doc.customer)
-	if customer.customer_group=="Distributer":
+	if customer.customer_group=="Distributor":
 		se=frappe.new_doc("Stock Entry")
 		se.purpose="Material Receipt"
 		se.posting_date=frappe.utils.nowdate()
@@ -152,7 +152,7 @@ def employement_type_code_check(doc,method):
 		frappe.throw(_("Employment Code already present ,please choose diffrent code"))
 
 def customer_filter(doctype, txt, searchfield, start, page_len, filters):
-	data=frappe.db.sql("""select name from `tabCustomer`where customer_group!='Distributer' """)
+	data=frappe.db.sql("""select name from `tabCustomer`where customer_group!='Distributor' """)
 	return data
 
 @frappe.whitelist()

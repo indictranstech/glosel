@@ -65,7 +65,7 @@ def dn_submit(doc,method):
 			company_territory=customer.territory
 
 		for raw in doc.get("items"):
-			if raw.is_free_item==0 and customer.customer_group!="Distributer":
+			if raw.is_free_item==0 and customer.customer_group!="Distributor":
 				item=frappe.get_doc("Item",raw.item_code)
 				item_code=raw.item_code
 				item_group=item.item_group
@@ -284,7 +284,7 @@ def get_schemes(doc):
 
 # for raw in doc.get("items"):
 	# print "\n\customer_group",doc.get("customer_group")
-	if doc.get("customer_group") == "Distributer":
+	if doc.get("customer_group") == "Distributor":
 		company = doc.get("company")
 		# print "Distributer Scheme"
 		customer = doc.get("customer")
@@ -295,7 +295,7 @@ def get_schemes(doc):
 		scheme_title= frappe.db.sql("""select title,company,scheme_depends_upon from `tabScheme Management` where active=1  and valid_upto > now() and (scheme_depends_upon='Customer'  and customer='{0}') or (scheme_depends_upon='ALL')""".format(customer),as_dict=1)
 	# item_obj = frappe.get_doc("Item",raw["item_code"])
 	# scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and item_group=%s""",(item_obj.item_group),as_dict=1)
-	if doc.get("customer_group") == "Distributer":
+	if doc.get("customer_group") == "Distributor":
 		company = doc.get("company")
 		customer = doc.get("customer")
 		scheme_title_group= frappe.db.sql("""select title from `tabScheme Management` where active=1 and valid_upto > now() and (apply_on='Item Group' or apply_on='Brand') and (scheme_depends_upon='Company'  and company='{0}') or (scheme_depends_upon='ALL')""".format(customer),as_dict=1)
