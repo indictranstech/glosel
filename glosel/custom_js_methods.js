@@ -181,6 +181,9 @@ cur_frm.cscript.onload = function(doc,cdt,cdn) {
 cur_frm.cscript.validate = function(doc,cdt,cdn) {
 	find_lat_lon(doc, 1);
 }
+cur_frm.cscript.refresh = function(doc,cdt,cdn) {
+	find_lat_lon(doc, 1);
+}
 
 find_lat_lon = function(doc, count) {
 	var full_address = post_code_address = ''
